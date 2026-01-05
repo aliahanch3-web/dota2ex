@@ -5,6 +5,7 @@ import { Hero, heroes } from "@/data/heroes";
 import { positions, PositionKey, getSuggestedHeroes, teamCompositions } from "@/data/teamCompositions";
 import HeroSlot from "@/components/HeroSlot";
 import HeroPickerModal from "@/components/HeroPickerModal";
+import TeamAnalysisCard from "@/components/TeamAnalysisCard";
 import { Button } from "@/components/ui/button";
 import { useAISuggestions } from "@/hooks/useAISuggestions";
 
@@ -18,7 +19,16 @@ const TeamBuilder = () => {
   });
 
   const [activeSlot, setActiveSlot] = useState<PositionKey | null>(null);
-  const { aiSuggestions, isLoadingAI, getAISuggestions, clearAISuggestions } = useAISuggestions();
+  const { 
+    aiSuggestions, 
+    isLoadingAI, 
+    getAISuggestions, 
+    clearAISuggestions,
+    teamAnalysis,
+    isAnalyzing,
+    analyzeTeam,
+    clearTeamAnalysis
+  } = useAISuggestions();
 
   // Fetch AI suggestions when slot changes
   useEffect(() => {
@@ -28,6 +38,16 @@ const TeamBuilder = () => {
       clearAISuggestions();
     }
   }, [activeSlot, selectedHeroes, getAISuggestions, clearAISuggestions]);
+
+  // Analyze team when all heroes are selected
+  useEffect(() => {
+    const allSelected = Object.values(selectedHeroes).every(h => h !== null);
+    if (allSelected) {
+      analyzeTeam(selectedHeroes);
+    } else {
+      clearTeamAnalysis();
+    }
+  }, [selectedHeroes, analyzeTeam, clearTeamAnalysis]);
 
   const selectedHeroNames = useMemo(() => {
     const result: Record<PositionKey, string | null> = {
@@ -65,6 +85,10 @@ const TeamBuilder = () => {
       comp.pos4 === selectedHeroes.pos4?.name &&
       comp.pos5 === selectedHeroes.pos5?.name
     ) || null;
+  }, [selectedHeroes]);
+
+  const allHeroesSelected = useMemo(() => {
+    return Object.values(selectedHeroes).every(h => h !== null);
   }, [selectedHeroes]);
 
   const handleSelectHero = (hero: Hero) => {
@@ -146,14 +170,30 @@ const TeamBuilder = () => {
           ))}
         </div>
 
+        {/* AI Team Analysis */}
+        {(allHeroesSelected || isAnalyzing) && !matchedComposition && (
+          <div className="mb-8">
+            <TeamAnalysisCard analysis={teamAnalysis} isLoading={isAnalyzing} />
+          </div>
+        )}
+
         {/* Matched Composition */}
         {matchedComposition && (
-          <div className="max-w-2xl mx-auto bg-primary/10 border border-primary/30 rounded-xl p-6 text-center animate-fade-in">
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <Sparkles className="w-5 h-5 text-primary" />
-              <h3 className="text-lg font-bold text-primary">{matchedComposition.name}</h3>
+          <div className="mb-8">
+            <div className="max-w-2xl mx-auto bg-primary/10 border border-primary/30 rounded-xl p-6 text-center animate-fade-in">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <Sparkles className="w-5 h-5 text-primary" />
+                <h3 className="text-lg font-bold text-primary">{matchedComposition.name}</h3>
+              </div>
+              <p className="text-foreground/80">{matchedComposition.playstyle}</p>
             </div>
-            <p className="text-foreground/80">{matchedComposition.playstyle}</p>
+            
+            {/* Also show AI analysis below matched composition */}
+            {(teamAnalysis || isAnalyzing) && (
+              <div className="mt-4">
+                <TeamAnalysisCard analysis={teamAnalysis} isLoading={isAnalyzing} />
+              </div>
+            )}
           </div>
         )}
 
