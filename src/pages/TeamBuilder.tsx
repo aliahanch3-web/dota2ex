@@ -56,39 +56,53 @@ const TeamBuilder = () => {
     ) || null;
   }, [selectedHeroes]);
 
-  // Map hero's primaryRole to the correct position
-  const getRolePosition = (role: Hero['primaryRole']): PositionKey => {
-    switch (role) {
-      case 'Carry': return 'pos1';
-      case 'Mid': return 'pos2';
-      case 'Offlane': return 'pos3';
-      case 'Support': 
-        // Check if pos4 is empty, otherwise use pos5
-        if (!selectedHeroes.pos4) return 'pos4';
-        return 'pos5';
-      default: return 'pos4';
-    }
-  };
-
   const handleSelectHero = (hero: Hero) => {
-    const targetPosition = getRolePosition(hero.primaryRole);
-    
-    // If target position is already occupied, show toast or swap
-    if (selectedHeroes[targetPosition]) {
-      // Find an empty slot for support heroes
-      if (hero.primaryRole === 'Support') {
-        if (!selectedHeroes.pos4) {
-          setSelectedHeroes(prev => ({ ...prev, pos4: hero }));
-        } else if (!selectedHeroes.pos5) {
-          setSelectedHeroes(prev => ({ ...prev, pos5: hero }));
+    setSelectedHeroes(prev => {
+      // Resolve the "correct" slot for the hero's role based on the CURRENT state
+      const resolveTargetPosition = (role: Hero["primaryRole"], state: typeof prev): PositionKey => {
+        switch (role) {
+          case "Carry":
+            return "pos1";
+          case "Mid":
+            return "pos2";
+          case "Offlane":
+            return "pos3";
+          case "Support":
+            // Supports can be pos4 or pos5 — prefer an empty pos4, then pos5
+            if (!state.pos4) return "pos4";
+            if (!state.pos5) return "pos5";
+            return "pos4";
+          default:
+            return "pos4";
         }
-      } else {
-        // Replace the hero in the correct position
-        setSelectedHeroes(prev => ({ ...prev, [targetPosition]: hero }));
+      };
+
+      const next: typeof prev = { ...prev };
+
+      // If this hero already exists in the lineup, remove it first (prevents duplicates)
+      for (const key of Object.keys(next) as PositionKey[]) {
+        if (next[key]?.name === hero.name) next[key] = null;
       }
-    } else {
-      setSelectedHeroes(prev => ({ ...prev, [targetPosition]: hero }));
-    }
+
+      // If user picked from a specific slot, use swap behavior when the hero belongs elsewhere.
+      // For Supports, if they clicked pos4/pos5, keep it there (both are valid support slots).
+      const targetPosition: PositionKey = activeSlot
+        ? hero.primaryRole === "Support" && (activeSlot === "pos4" || activeSlot === "pos5")
+          ? activeSlot
+          : resolveTargetPosition(hero.primaryRole, next)
+        : resolveTargetPosition(hero.primaryRole, next);
+
+      const displaced = next[targetPosition];
+      next[targetPosition] = hero;
+
+      // If they were selecting for a different slot, move the displaced hero back into the clicked slot
+      if (activeSlot && activeSlot !== targetPosition) {
+        next[activeSlot] = displaced ?? null;
+      }
+
+      return next;
+    });
+
     setActiveSlot(null);
   };
 
