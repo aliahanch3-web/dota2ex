@@ -16,14 +16,6 @@ const TeamBuilder = () => {
     pos5: null
   });
 
-  const [lockedSlots, setLockedSlots] = useState<Record<PositionKey, boolean>>({
-    pos1: false,
-    pos2: false,
-    pos3: false,
-    pos4: false,
-    pos5: false
-  });
-
   const [activeSlot, setActiveSlot] = useState<PositionKey | null>(null);
 
   const selectedHeroNames = useMemo(() => {
@@ -42,10 +34,8 @@ const TeamBuilder = () => {
 
   const suggestedHeroes = useMemo(() => {
     if (!activeSlot) return [];
-    // Don't show suggestions for locked slots
-    if (lockedSlots[activeSlot]) return [];
     return getSuggestedHeroes(selectedHeroNames, activeSlot);
-  }, [selectedHeroNames, activeSlot, lockedSlots]);
+  }, [selectedHeroNames, activeSlot]);
 
   const disabledHeroes = useMemo(() => {
     return Object.values(selectedHeroes)
@@ -67,88 +57,14 @@ const TeamBuilder = () => {
   }, [selectedHeroes]);
 
   const handleSelectHero = (hero: Hero) => {
-    setSelectedHeroes(prev => {
-      // Resolve the "correct" slot for the hero's role based on the CURRENT state
-      // but ONLY consider unlocked slots
-      const resolveTargetPosition = (role: Hero["primaryRole"], state: typeof prev): PositionKey => {
-        switch (role) {
-          case "Carry":
-            // If pos1 is locked, fall back to activeSlot or first unlocked
-            if (lockedSlots.pos1) return activeSlot || "pos1";
-            return "pos1";
-          case "Mid":
-            if (lockedSlots.pos2) return activeSlot || "pos2";
-            return "pos2";
-          case "Offlane":
-            if (lockedSlots.pos3) return activeSlot || "pos3";
-            return "pos3";
-          case "Support":
-            // Supports can be pos4 or pos5 — prefer an empty unlocked pos4, then pos5
-            if (!lockedSlots.pos4 && !state.pos4) return "pos4";
-            if (!lockedSlots.pos5 && !state.pos5) return "pos5";
-            if (!lockedSlots.pos4) return "pos4";
-            if (!lockedSlots.pos5) return "pos5";
-            return activeSlot || "pos4";
-          default:
-            return activeSlot || "pos4";
-        }
-      };
-
-      const next: typeof prev = { ...prev };
-
-      // If this hero already exists in the lineup, remove it first (prevents duplicates)
-      // but NOT from locked slots
-      for (const key of Object.keys(next) as PositionKey[]) {
-        if (next[key]?.name === hero.name && !lockedSlots[key]) {
-          next[key] = null;
-        }
-      }
-
-      // If user picked from a specific slot, use swap behavior when the hero belongs elsewhere.
-      // For Supports, if they clicked pos4/pos5, keep it there (both are valid support slots).
-      let targetPosition: PositionKey = activeSlot
-        ? hero.primaryRole === "Support" && (activeSlot === "pos4" || activeSlot === "pos5")
-          ? activeSlot
-          : resolveTargetPosition(hero.primaryRole, next)
-        : resolveTargetPosition(hero.primaryRole, next);
-
-      // Don't place in locked slots
-      if (lockedSlots[targetPosition]) {
-        // Use the activeSlot instead if it's not locked
-        if (activeSlot && !lockedSlots[activeSlot]) {
-          targetPosition = activeSlot;
-        } else {
-          // Find first unlocked empty slot
-          const unlockedEmpty = (Object.keys(next) as PositionKey[]).find(
-            key => !lockedSlots[key] && !next[key]
-          );
-          if (unlockedEmpty) targetPosition = unlockedEmpty;
-          else return prev; // Can't place anywhere
-        }
-      }
-
-      const displaced = next[targetPosition];
-      next[targetPosition] = hero;
-
-      // If they were selecting for a different slot, move the displaced hero back into the clicked slot
-      // but only if the clicked slot is not locked
-      if (activeSlot && activeSlot !== targetPosition && !lockedSlots[activeSlot]) {
-        next[activeSlot] = displaced ?? null;
-      }
-
-      return next;
-    });
-
-    setActiveSlot(null);
+    if (activeSlot) {
+      setSelectedHeroes(prev => ({ ...prev, [activeSlot]: hero }));
+      setActiveSlot(null);
+    }
   };
 
   const handleClearHero = (position: PositionKey) => {
-    if (lockedSlots[position]) return;
     setSelectedHeroes(prev => ({ ...prev, [position]: null }));
-  };
-
-  const handleToggleLock = (position: PositionKey) => {
-    setLockedSlots(prev => ({ ...prev, [position]: !prev[position] }));
   };
 
   const handleReset = () => {
@@ -159,18 +75,10 @@ const TeamBuilder = () => {
       pos4: null,
       pos5: null
     });
-    setLockedSlots({
-      pos1: false,
-      pos2: false,
-      pos3: false,
-      pos4: false,
-      pos5: false
-    });
   };
 
   const getSlotSuggested = (posKey: PositionKey): boolean => {
     if (selectedHeroes[posKey]) return false;
-    if (lockedSlots[posKey]) return false; // No suggestions for locked slots
     const suggestions = getSuggestedHeroes(selectedHeroNames, posKey);
     return suggestions.length > 0;
   };
@@ -208,7 +116,7 @@ const TeamBuilder = () => {
           <p className="text-muted-foreground">
             روی هر جای خالی کلیک کنید و هیروی مورد نظر را انتخاب کنید.
             <br />
-            <span className="text-primary text-sm">هیروها بر اساس نقش خودشان در جایگاه درست قرار می‌گیرند.</span>
+            <span className="text-primary text-sm">پیشنهادات بر اساس ترکیب‌های حرفه‌ای نمایش داده می‌شوند.</span>
           </p>
         </div>
 
@@ -223,8 +131,6 @@ const TeamBuilder = () => {
               onClick={() => setActiveSlot(pos.key)}
               onClear={() => handleClearHero(pos.key)}
               suggested={getSlotSuggested(pos.key)}
-              locked={lockedSlots[pos.key]}
-              onToggleLock={() => handleToggleLock(pos.key)}
             />
           ))}
         </div>
