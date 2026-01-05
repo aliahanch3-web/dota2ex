@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Users } from "lucide-react";
 import { heroes, Hero, Role } from "@/data/heroes";
 import { HeroCard } from "@/components/HeroCard";
-import { HeroModal } from "@/components/HeroModal";
+import { HeroGuideModal } from "@/components/HeroGuideModal";
 import { RoleFilter } from "@/components/RoleFilter";
 import { SearchBar } from "@/components/SearchBar";
 import { Button } from "@/components/ui/button";
@@ -102,8 +102,8 @@ const Index = () => {
         </div>
       </footer>
 
-      {/* Hero Modal */}
-      <HeroModal
+      {/* Hero Guide Modal */}
+      <HeroGuideModal
         hero={selectedHero}
         isOpen={!!selectedHero}
         onClose={() => setSelectedHero(null)}
