@@ -27,11 +27,18 @@ export interface Playstyle {
   tips: string[];
 }
 
+export interface FacetInfo {
+  name: string;
+  description: string;
+  recommendation: string;
+}
+
 export interface HeroGuide {
   abilities: AbilityInfo[];
   skillBuild: SkillBuild;
   items: ItemBuild;
   playstyle: Playstyle;
+  facets?: FacetInfo[];
 }
 
 export const useHeroGuide = () => {

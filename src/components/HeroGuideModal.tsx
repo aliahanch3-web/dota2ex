@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Sword, Package, TrendingUp, Sparkles, X } from "lucide-react";
+import { Loader2, Sword, Package, TrendingUp, Sparkles, X, Gem } from "lucide-react";
 import { useHeroGuide } from "@/hooks/useHeroGuide";
 
 interface HeroGuideModalProps {
@@ -98,10 +98,14 @@ export const HeroGuideModal = ({ hero, isOpen, onClose }: HeroGuideModalProps) =
             </div>
           ) : guide ? (
             <Tabs defaultValue="abilities" dir="rtl" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-4">
+              <TabsList className="grid w-full grid-cols-5 mb-4">
                 <TabsTrigger value="abilities" className="text-xs gap-1">
                   <Sword className="w-3 h-3" />
                   اسکیل‌ها
+                </TabsTrigger>
+                <TabsTrigger value="facets" className="text-xs gap-1">
+                  <Gem className="w-3 h-3" />
+                  فست‌ها
                 </TabsTrigger>
                 <TabsTrigger value="items" className="text-xs gap-1">
                   <Package className="w-3 h-3" />
@@ -136,6 +140,26 @@ export const HeroGuideModal = ({ hero, isOpen, onClose }: HeroGuideModalProps) =
                       )}
                     </div>
                   ))}
+                </TabsContent>
+
+                {/* Facets Tab */}
+                <TabsContent value="facets" className="space-y-3 mt-0">
+                  {guide.facets && guide.facets.length > 0 ? (
+                    guide.facets.map((facet, idx) => (
+                      <div key={idx} className="bg-accent/10 border border-accent/30 rounded-lg p-3">
+                        <h4 className="font-bold text-accent mb-1">{facet.name}</h4>
+                        <p className="text-sm text-muted-foreground mb-2">{facet.description}</p>
+                        <div className="bg-background/50 rounded p-2">
+                          <p className="text-xs text-primary">
+                            <span className="font-medium">پیشنهاد: </span>
+                            {facet.recommendation}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center text-muted-foreground py-4">اطلاعات فست موجود نیست</p>
+                  )}
                 </TabsContent>
 
                 {/* Items Tab */}
