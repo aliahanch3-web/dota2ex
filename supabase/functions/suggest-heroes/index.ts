@@ -11,16 +11,20 @@ serve(async (req) => {
   }
 
   try {
-    const { selectedHeroes, targetPosition, heroesData, type } = await req.json();
+    const { selectedHeroes, targetPosition, heroesData, type, enemyHeroes } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Type can be "suggest" or "analyze"
+    // Type can be "suggest", "analyze", or "counter"
     if (type === "analyze") {
       return await analyzeTeam(selectedHeroes, LOVABLE_API_KEY);
+    }
+
+    if (type === "counter") {
+      return await suggestCounters(enemyHeroes, heroesData, LOVABLE_API_KEY);
     }
 
     return await suggestHeroes(selectedHeroes, targetPosition, heroesData, LOVABLE_API_KEY);
@@ -161,6 +165,73 @@ All text must be in Persian (Farsi).`;
   }
 
   return new Response(JSON.stringify({ analysis }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+async function suggestCounters(
+  enemyHeroes: string[],
+  heroesData: any[],
+  apiKey: string
+) {
+  const enemyList = enemyHeroes.join(", ");
+
+  const systemPrompt = `You are a Dota 2 counter-picking expert.
+
+RESPOND ONLY WITH A VALID JSON OBJECT:
+{
+  "counters": [
+    {"hero": "Hero Name", "reason": "کوتاه و فارسی چرا کانتر است", "countersAgainst": ["enemy hero 1", "enemy hero 2"]},
+    {"hero": "Hero Name", "reason": "کوتاه و فارسی چرا کانتر است", "countersAgainst": ["enemy hero"]}
+  ]
+}
+
+Rules:
+- Suggest 5-8 heroes that counter the enemy picks
+- Reasons must be in Persian (Farsi), max 15 words each
+- Use exact hero names from Dota 2
+- countersAgainst should list which enemy heroes this pick counters
+- Consider hero abilities, items, and playstyles`;
+
+  const userPrompt = `تیم دشمن: ${enemyList}
+هیروهای موجود: ${heroesData.map((h: any) => h.name).join(", ")}
+
+چه هیروهایی کانتر این پیک دشمن هستن؟`;
+
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    return handleApiError(response);
+  }
+
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content || "{}";
+
+  let counters: { hero: string; reason: string; countersAgainst: string[] }[] = [];
+  try {
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      counters = parsed.counters || [];
+    }
+  } catch (parseError) {
+    console.error("Failed to parse AI counter response:", parseError);
+  }
+
+  return new Response(JSON.stringify({ counters }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
