@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,13 +19,18 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
     // Type can be "suggest", "analyze", or "counter"
     if (type === "analyze") {
       return await analyzeTeam(selectedHeroes, LOVABLE_API_KEY);
     }
 
     if (type === "counter") {
-      return await suggestCounters(enemyHeroes, heroesData, LOVABLE_API_KEY);
+      return await suggestCounters(enemyHeroes, heroesData, LOVABLE_API_KEY, supabase);
     }
 
     return await suggestHeroes(selectedHeroes, targetPosition, heroesData, LOVABLE_API_KEY);
@@ -182,8 +188,32 @@ All text must be in Persian (Farsi).`;
 async function suggestCounters(
   enemyHeroes: string[],
   heroesData: any[],
-  apiKey: string
+  apiKey: string,
+  supabase: any
 ) {
+  // Create a unique cache key from sorted enemy heroes
+  const cacheKey = [...enemyHeroes].sort().join(",").toLowerCase();
+  
+  // Check cache first
+  const { data: cachedData, error: cacheError } = await supabase
+    .from('counter_suggestions_cache')
+    .select('suggestions_data')
+    .eq('enemy_heroes_key', cacheKey)
+    .maybeSingle();
+
+  if (cacheError) {
+    console.error("Cache lookup error:", cacheError);
+  }
+
+  if (cachedData) {
+    console.log(`Returning cached counter suggestions for: ${cacheKey}`);
+    return new Response(JSON.stringify({ counters: cachedData.suggestions_data }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  console.log(`No cache found, generating counters for: ${cacheKey}`);
+
   const enemyList = enemyHeroes.join(", ");
 
   const systemPrompt = `You are a Dota 2 counter-picking expert.
@@ -239,6 +269,22 @@ Rules:
     }
   } catch (parseError) {
     console.error("Failed to parse AI counter response:", parseError);
+  }
+
+  // Save to cache
+  if (counters.length > 0) {
+    const { error: insertError } = await supabase
+      .from('counter_suggestions_cache')
+      .insert({
+        enemy_heroes_key: cacheKey,
+        suggestions_data: counters
+      });
+
+    if (insertError) {
+      console.error("Failed to cache counter suggestions:", insertError);
+    } else {
+      console.log(`Counter suggestions cached for: ${cacheKey}`);
+    }
   }
 
   return new Response(JSON.stringify({ counters }), {

@@ -44,16 +44,17 @@ export interface HeroGuide {
 export const useHeroGuide = () => {
   const [guide, setGuide] = useState<HeroGuide | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getHeroGuide = useCallback(async (heroName: string) => {
+  const getHeroGuide = useCallback(async (heroName: string, forceRefresh = false) => {
     setIsLoading(true);
     setError(null);
     setGuide(null);
 
     try {
       const { data, error: fnError } = await supabase.functions.invoke('hero-guide', {
-        body: { heroName }
+        body: { heroName, forceRefresh }
       });
 
       if (fnError) {
@@ -73,6 +74,32 @@ export const useHeroGuide = () => {
     }
   }, []);
 
+  const refreshGuide = useCallback(async (heroName: string) => {
+    setIsRefreshing(true);
+    setError(null);
+
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('hero-guide', {
+        body: { heroName, forceRefresh: true }
+      });
+
+      if (fnError) {
+        throw new Error(fnError.message);
+      }
+
+      if (data?.guide) {
+        setGuide(data.guide);
+      } else if (data?.error) {
+        throw new Error(data.error);
+      }
+    } catch (err) {
+      console.error("Error refreshing hero guide:", err);
+      setError(err instanceof Error ? err.message : "خطا در بروزرسانی راهنما");
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, []);
+
   const clearGuide = useCallback(() => {
     setGuide(null);
     setError(null);
@@ -81,8 +108,10 @@ export const useHeroGuide = () => {
   return {
     guide,
     isLoading,
+    isRefreshing,
     error,
     getHeroGuide,
+    refreshGuide,
     clearGuide
   };
 };

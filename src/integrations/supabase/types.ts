@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      counter_suggestions_cache: {
+        Row: {
+          created_at: string
+          enemy_heroes_key: string
+          id: string
+          suggestions_data: Json
+        }
+        Insert: {
+          created_at?: string
+          enemy_heroes_key: string
+          id?: string
+          suggestions_data: Json
+        }
+        Update: {
+          created_at?: string
+          enemy_heroes_key?: string
+          id?: string
+          suggestions_data?: Json
+        }
+        Relationships: []
+      }
       hero_guides_cache: {
         Row: {
           created_at: string

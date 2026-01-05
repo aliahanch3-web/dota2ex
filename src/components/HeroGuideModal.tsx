@@ -4,7 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Sword, Package, TrendingUp, Sparkles, X, Gem } from "lucide-react";
+import { Loader2, Sword, Package, TrendingUp, Sparkles, X, Gem, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useHeroGuide } from "@/hooks/useHeroGuide";
 
 interface HeroGuideModalProps {
@@ -22,7 +23,7 @@ const roleColorClass = {
 
 export const HeroGuideModal = ({ hero, isOpen, onClose }: HeroGuideModalProps) => {
   const [imageError, setImageError] = useState(false);
-  const { guide, isLoading, error, getHeroGuide, clearGuide } = useHeroGuide();
+  const { guide, isLoading, isRefreshing, error, getHeroGuide, refreshGuide, clearGuide } = useHeroGuide();
 
   useEffect(() => {
     if (isOpen && hero) {
@@ -74,7 +75,21 @@ export const HeroGuideModal = ({ hero, isOpen, onClose }: HeroGuideModalProps) =
                   </Badge>
                 </DialogTitle>
               </DialogHeader>
-              <p className="text-sm text-muted-foreground">{hero.role}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-muted-foreground">{hero.role}</p>
+                {guide && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => refreshGuide(hero.name)}
+                    disabled={isRefreshing}
+                    className="h-6 w-6 p-0"
+                    title="بروزرسانی راهنما"
+                  >
+                    <RefreshCw className={`h-3 w-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>
