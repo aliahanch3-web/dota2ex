@@ -81,6 +81,20 @@ const TeamBuilder = () => {
     return result;
   }, [selectedHeroes]);
 
+  // Filter compositions based on selected heroes
+  const filteredCompositions = useMemo(() => {
+    const selectedNames = Object.values(selectedHeroes)
+      .filter((h): h is Hero => h !== null)
+      .map(h => h.name);
+    
+    if (selectedNames.length === 0) return teamCompositions;
+    
+    return teamCompositions.filter(comp => {
+      const compHeroes = [comp.pos1, comp.pos2, comp.pos3, comp.pos4, comp.pos5];
+      return selectedNames.every(name => compHeroes.includes(name));
+    });
+  }, [selectedHeroes]);
+
   const suggestedHeroes = useMemo(() => {
     if (!activeSlot) return [];
     return getSuggestedHeroes(selectedHeroNames, activeSlot);
@@ -154,6 +168,17 @@ const TeamBuilder = () => {
     if (selectedHeroes[posKey]) return false;
     const suggestions = getSuggestedHeroes(selectedHeroNames, posKey);
     return suggestions.length > 0;
+  };
+
+  const handleSelectComposition = (comp: typeof teamCompositions[0]) => {
+    const newSelection: Record<PositionKey, Hero | null> = {
+      pos1: heroes.find(h => h.name === comp.pos1) || null,
+      pos2: heroes.find(h => h.name === comp.pos2) || null,
+      pos3: heroes.find(h => h.name === comp.pos3) || null,
+      pos4: heroes.find(h => h.name === comp.pos4) || null,
+      pos5: heroes.find(h => h.name === comp.pos5) || null,
+    };
+    setSelectedHeroes(newSelection);
   };
 
   return (
@@ -267,38 +292,74 @@ const TeamBuilder = () => {
 
         {/* Available Compositions */}
         <div className="mt-12">
-          <h2 className="text-lg font-bold text-foreground mb-4 text-center">ترکیب‌های پیشنهادی</h2>
-          <div className="grid gap-4 max-w-4xl mx-auto">
-            {teamCompositions.map((comp, idx) => (
-              <div
-                key={idx}
-                className="bg-card border border-border rounded-xl p-4 hover:border-primary/30 transition-colors"
-              >
-                <h3 className="font-bold text-foreground mb-2">{comp.name}</h3>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {[comp.pos1, comp.pos2, comp.pos3, comp.pos4, comp.pos5].map((heroName, i) => {
-                    const hero = heroes.find(h => h.name === heroName);
-                    return (
-                      <div key={i} className="flex items-center gap-1 bg-background/50 rounded-lg px-2 py-1">
-                        {hero && (
-                          <img
-                            src={hero.image}
-                            alt={heroName}
-                            className="w-6 h-6 rounded"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = "/placeholder.svg";
-                            }}
-                          />
-                        )}
-                        <span className="text-xs text-foreground">{heroName}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <p className="text-sm text-muted-foreground">{comp.playstyle}</p>
-              </div>
-            ))}
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <h2 className="text-lg font-bold text-foreground">ترکیب‌های پیشنهادی</h2>
+            {filteredCompositions.length !== teamCompositions.length && (
+              <span className="text-sm text-muted-foreground">
+                ({filteredCompositions.length} از {teamCompositions.length})
+              </span>
+            )}
           </div>
+          
+          {filteredCompositions.length === 0 ? (
+            <p className="text-center text-muted-foreground">
+              هیچ ترکیبی با هیروهای انتخاب شده یافت نشد.
+            </p>
+          ) : (
+            <div className="grid gap-4 max-w-4xl mx-auto">
+              {filteredCompositions.map((comp, idx) => {
+                const selectedNames = Object.values(selectedHeroes)
+                  .filter((h): h is Hero => h !== null)
+                  .map(h => h.name);
+                
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => handleSelectComposition(comp)}
+                    className="bg-card border border-border rounded-xl p-4 hover:border-primary/50 hover:bg-primary/5 transition-all text-right group"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                        کلیک برای انتخاب
+                      </span>
+                      <h3 className="font-bold text-foreground">{comp.name}</h3>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mb-3 justify-end">
+                      {[comp.pos1, comp.pos2, comp.pos3, comp.pos4, comp.pos5].map((heroName, i) => {
+                        const hero = heroes.find(h => h.name === heroName);
+                        const isSelected = selectedNames.includes(heroName);
+                        return (
+                          <div 
+                            key={i} 
+                            className={`flex items-center gap-1 rounded-lg px-2 py-1 ${
+                              isSelected 
+                                ? 'bg-primary/20 ring-1 ring-primary/50' 
+                                : 'bg-background/50'
+                            }`}
+                          >
+                            {hero && (
+                              <img
+                                src={hero.image}
+                                alt={heroName}
+                                className="w-6 h-6 rounded"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = "/placeholder.svg";
+                                }}
+                              />
+                            )}
+                            <span className={`text-xs ${isSelected ? 'text-primary font-medium' : 'text-foreground'}`}>
+                              {heroName}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p className="text-sm text-muted-foreground">{comp.playstyle}</p>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </main>
 
