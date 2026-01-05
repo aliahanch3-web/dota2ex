@@ -1,0 +1,4 @@
+project_id = "xeeleiylxixcwazjeyvq"
+
+[functions.suggest-heroes]
+verify_jwt = false

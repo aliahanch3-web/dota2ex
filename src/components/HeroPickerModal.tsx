@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, Sparkles, Loader2 } from "lucide-react";
 import { heroes, Hero } from "@/data/heroes";
 
 interface HeroPickerModalProps {
@@ -9,6 +9,8 @@ interface HeroPickerModalProps {
   onClose: () => void;
   onSelect: (hero: Hero) => void;
   suggestedHeroes: string[];
+  aiSuggestedHeroes?: string[];
+  isLoadingAI?: boolean;
   disabledHeroes: string[];
   position: string;
   role: string;
@@ -19,6 +21,8 @@ const HeroPickerModal = ({
   onClose,
   onSelect,
   suggestedHeroes,
+  aiSuggestedHeroes = [],
+  isLoadingAI = false,
   disabledHeroes,
   position,
   role
@@ -35,9 +39,19 @@ const HeroPickerModal = ({
     return filteredHeroes.filter(h => suggestedHeroes.includes(h.name));
   }, [filteredHeroes, suggestedHeroes]);
 
+  const aiSuggested = useMemo(() => {
+    return filteredHeroes.filter(h => 
+      aiSuggestedHeroes.includes(h.name) && !suggestedHeroes.includes(h.name)
+    );
+  }, [filteredHeroes, aiSuggestedHeroes, suggestedHeroes]);
+
+  const allSuggestedNames = useMemo(() => {
+    return [...suggestedHeroes, ...aiSuggestedHeroes];
+  }, [suggestedHeroes, aiSuggestedHeroes]);
+
   const others = useMemo(() => {
-    return filteredHeroes.filter(h => !suggestedHeroes.includes(h.name));
-  }, [filteredHeroes, suggestedHeroes]);
+    return filteredHeroes.filter(h => !allSuggestedNames.includes(h.name));
+  }, [filteredHeroes, allSuggestedNames]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -59,6 +73,35 @@ const HeroPickerModal = ({
         </div>
 
         <div className="overflow-y-auto max-h-[55vh] space-y-4 px-1">
+          {/* AI Suggestions Section */}
+          {(isLoadingAI || aiSuggested.length > 0) && (
+            <div>
+              <h3 className="text-sm font-semibold text-yellow-500 mb-2 flex items-center gap-2">
+                <Sparkles className="w-4 h-4" />
+                پیشنهاد هوش مصنوعی
+                {isLoadingAI && <Loader2 className="w-4 h-4 animate-spin" />}
+              </h3>
+              {isLoadingAI ? (
+                <div className="flex items-center justify-center py-4">
+                  <p className="text-sm text-muted-foreground">در حال تحلیل ترکیب تیم...</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+                  {aiSuggested.map(hero => (
+                    <HeroItem
+                      key={hero.name}
+                      hero={hero}
+                      onSelect={onSelect}
+                      disabled={disabledHeroes.includes(hero.name)}
+                      aiSuggested
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Composition Suggestions Section */}
           {suggested.length > 0 && (
             <div>
               <h3 className="text-sm font-semibold text-primary mb-2 flex items-center gap-2">
@@ -103,9 +146,10 @@ interface HeroItemProps {
   onSelect: (hero: Hero) => void;
   disabled: boolean;
   suggested?: boolean;
+  aiSuggested?: boolean;
 }
 
-const HeroItem = ({ hero, onSelect, disabled, suggested }: HeroItemProps) => {
+const HeroItem = ({ hero, onSelect, disabled, suggested, aiSuggested }: HeroItemProps) => {
   return (
     <button
       onClick={() => !disabled && onSelect(hero)}
@@ -114,9 +158,11 @@ const HeroItem = ({ hero, onSelect, disabled, suggested }: HeroItemProps) => {
         relative group flex flex-col items-center p-1 rounded-lg transition-all duration-200
         ${disabled 
           ? "opacity-30 cursor-not-allowed" 
-          : suggested
-            ? "bg-primary/20 hover:bg-primary/30 ring-1 ring-primary"
-            : "hover:bg-accent cursor-pointer"
+          : aiSuggested
+            ? "bg-yellow-500/20 hover:bg-yellow-500/30 ring-1 ring-yellow-500"
+            : suggested
+              ? "bg-primary/20 hover:bg-primary/30 ring-1 ring-primary"
+              : "hover:bg-accent cursor-pointer"
         }
       `}
     >
