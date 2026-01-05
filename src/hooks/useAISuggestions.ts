@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Hero, heroes } from "@/data/heroes";
 import { PositionKey, positions } from "@/data/teamCompositions";
 import { toast } from "@/hooks/use-toast";
+import { CounterSuggestion } from "@/components/CounterPickSection";
 
 export interface AISuggestion {
   hero: string;
@@ -22,6 +23,8 @@ export const useAISuggestions = () => {
   const [isLoadingAI, setIsLoadingAI] = useState(false);
   const [teamAnalysis, setTeamAnalysis] = useState<TeamAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [counterSuggestions, setCounterSuggestions] = useState<CounterSuggestion[]>([]);
+  const [isLoadingCounters, setIsLoadingCounters] = useState(false);
 
   const getAISuggestions = useCallback(
     async (selectedHeroes: Record<PositionKey, Hero | null>, targetPosition: PositionKey) => {
@@ -128,12 +131,63 @@ export const useAISuggestions = () => {
     []
   );
 
+  const getCounterSuggestions = useCallback(async (enemyHeroes: string[]) => {
+    if (enemyHeroes.length === 0) {
+      setCounterSuggestions([]);
+      return;
+    }
+
+    setIsLoadingCounters(true);
+    setCounterSuggestions([]);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("suggest-heroes", {
+        body: {
+          type: "counter",
+          enemyHeroes,
+          heroesData: heroes.map((h) => ({ name: h.name, role: h.role })),
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.error) {
+        toast({
+          title: "خطا",
+          description: data.error,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data?.counters && Array.isArray(data.counters)) {
+        const validCounters = data.counters.filter((c: CounterSuggestion) =>
+          heroes.some((h) => h.name.toLowerCase() === c.hero.toLowerCase())
+        );
+        setCounterSuggestions(validCounters);
+      }
+    } catch (error) {
+      console.error("Counter suggestion error:", error);
+      toast({
+        title: "خطا در دریافت کانترها",
+        description: "لطفاً دوباره تلاش کنید.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingCounters(false);
+    }
+  }, []);
+
   const clearAISuggestions = useCallback(() => {
     setAiSuggestions([]);
   }, []);
 
   const clearTeamAnalysis = useCallback(() => {
     setTeamAnalysis(null);
+  }, []);
+
+  const clearCounterSuggestions = useCallback(() => {
+    setCounterSuggestions([]);
   }, []);
 
   return {
@@ -145,5 +199,9 @@ export const useAISuggestions = () => {
     isAnalyzing,
     analyzeTeam,
     clearTeamAnalysis,
+    counterSuggestions,
+    isLoadingCounters,
+    getCounterSuggestions,
+    clearCounterSuggestions,
   };
 };

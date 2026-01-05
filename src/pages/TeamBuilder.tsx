@@ -5,7 +5,9 @@ import { Hero, heroes } from "@/data/heroes";
 import { positions, PositionKey, getSuggestedHeroes, teamCompositions } from "@/data/teamCompositions";
 import HeroSlot from "@/components/HeroSlot";
 import HeroPickerModal from "@/components/HeroPickerModal";
+import EnemyPickerModal from "@/components/EnemyPickerModal";
 import TeamAnalysisCard from "@/components/TeamAnalysisCard";
+import CounterPickSection from "@/components/CounterPickSection";
 import { Button } from "@/components/ui/button";
 import { useAISuggestions } from "@/hooks/useAISuggestions";
 
@@ -19,6 +21,9 @@ const TeamBuilder = () => {
   });
 
   const [activeSlot, setActiveSlot] = useState<PositionKey | null>(null);
+  const [enemyHeroes, setEnemyHeroes] = useState<string[]>([]);
+  const [isEnemyPickerOpen, setIsEnemyPickerOpen] = useState(false);
+
   const { 
     aiSuggestions, 
     isLoadingAI, 
@@ -27,7 +32,11 @@ const TeamBuilder = () => {
     teamAnalysis,
     isAnalyzing,
     analyzeTeam,
-    clearTeamAnalysis
+    clearTeamAnalysis,
+    counterSuggestions,
+    isLoadingCounters,
+    getCounterSuggestions,
+    clearCounterSuggestions
   } = useAISuggestions();
 
   // Fetch AI suggestions when slot changes
@@ -48,6 +57,15 @@ const TeamBuilder = () => {
       clearTeamAnalysis();
     }
   }, [selectedHeroes, analyzeTeam, clearTeamAnalysis]);
+
+  // Get counter suggestions when enemy heroes change
+  useEffect(() => {
+    if (enemyHeroes.length > 0) {
+      getCounterSuggestions(enemyHeroes);
+    } else {
+      clearCounterSuggestions();
+    }
+  }, [enemyHeroes, getCounterSuggestions, clearCounterSuggestions]);
 
   const selectedHeroNames = useMemo(() => {
     const result: Record<PositionKey, string | null> = {
@@ -110,6 +128,26 @@ const TeamBuilder = () => {
       pos4: null,
       pos5: null
     });
+    setEnemyHeroes([]);
+  };
+
+  const handleAddEnemy = (hero: Hero) => {
+    if (enemyHeroes.length < 5 && !enemyHeroes.includes(hero.name)) {
+      setEnemyHeroes(prev => [...prev, hero.name]);
+    }
+    setIsEnemyPickerOpen(false);
+  };
+
+  const handleRemoveEnemy = (heroName: string) => {
+    setEnemyHeroes(prev => prev.filter(h => h !== heroName));
+  };
+
+  const handleSelectCounter = (hero: Hero) => {
+    // Find first empty slot and add the counter hero there
+    const emptySlot = positions.find(pos => !selectedHeroes[pos.key]);
+    if (emptySlot) {
+      setSelectedHeroes(prev => ({ ...prev, [emptySlot.key]: hero }));
+    }
   };
 
   const getSlotSuggested = (posKey: PositionKey): boolean => {
@@ -168,6 +206,18 @@ const TeamBuilder = () => {
               suggested={getSlotSuggested(pos.key)}
             />
           ))}
+        </div>
+
+        {/* Counter Pick Section */}
+        <div className="max-w-2xl mx-auto mb-8">
+          <CounterPickSection
+            enemyHeroes={enemyHeroes}
+            onAddEnemy={() => setIsEnemyPickerOpen(true)}
+            onRemoveEnemy={handleRemoveEnemy}
+            counterSuggestions={counterSuggestions}
+            isLoading={isLoadingCounters}
+            onSelectCounter={handleSelectCounter}
+          />
         </div>
 
         {/* AI Team Analysis */}
@@ -248,6 +298,14 @@ const TeamBuilder = () => {
           role={positions.find(p => p.key === activeSlot)?.role || ""}
         />
       )}
+
+      {/* Enemy Picker Modal */}
+      <EnemyPickerModal
+        open={isEnemyPickerOpen}
+        onClose={() => setIsEnemyPickerOpen(false)}
+        onSelect={handleAddEnemy}
+        selectedEnemies={enemyHeroes}
+      />
     </div>
   );
 };
