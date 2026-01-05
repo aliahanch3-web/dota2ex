@@ -14,7 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      hero_guides_cache: {
+        Row: {
+          created_at: string
+          guide_data: Json
+          hero_name: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          guide_data: Json
+          hero_name: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          guide_data?: Json
+          hero_name?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

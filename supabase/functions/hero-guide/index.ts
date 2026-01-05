@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,7 +15,33 @@ serve(async (req) => {
   try {
     const { heroName } = await req.json();
 
-    console.log(`Generating guide for hero: ${heroName}`);
+    console.log(`Fetching guide for hero: ${heroName}`);
+
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Check if guide exists in cache
+    const { data: cachedGuide, error: cacheError } = await supabase
+      .from('hero_guides_cache')
+      .select('guide_data')
+      .eq('hero_name', heroName.toLowerCase())
+      .maybeSingle();
+
+    if (cacheError) {
+      console.error("Cache lookup error:", cacheError);
+    }
+
+    // Return cached guide if exists
+    if (cachedGuide) {
+      console.log(`Returning cached guide for: ${heroName}`);
+      return new Response(JSON.stringify({ guide: cachedGuide.guide_data }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log(`No cache found, generating guide for: ${heroName}`);
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -144,6 +171,20 @@ serve(async (req) => {
     }
 
     const guide = JSON.parse(toolCall.function.arguments);
+
+    // Save to cache
+    const { error: insertError } = await supabase
+      .from('hero_guides_cache')
+      .insert({
+        hero_name: heroName.toLowerCase(),
+        guide_data: guide
+      });
+
+    if (insertError) {
+      console.error("Failed to cache guide:", insertError);
+    } else {
+      console.log(`Guide cached for: ${heroName}`);
+    }
 
     return new Response(JSON.stringify({ guide }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
