@@ -1,15 +1,17 @@
 import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Search, Sparkles, Loader2 } from "lucide-react";
 import { heroes, Hero } from "@/data/heroes";
+import { AISuggestion } from "@/hooks/useAISuggestions";
 
 interface HeroPickerModalProps {
   open: boolean;
   onClose: () => void;
   onSelect: (hero: Hero) => void;
   suggestedHeroes: string[];
-  aiSuggestedHeroes?: string[];
+  aiSuggestedHeroes?: AISuggestion[];
   isLoadingAI?: boolean;
   disabledHeroes: string[];
   position: string;
@@ -39,18 +41,33 @@ const HeroPickerModal = ({
     return filteredHeroes.filter(h => suggestedHeroes.includes(h.name));
   }, [filteredHeroes, suggestedHeroes]);
 
+  const aiSuggestedNames = useMemo(() => {
+    return aiSuggestedHeroes.map(s => s.hero);
+  }, [aiSuggestedHeroes]);
+
+  const aiSuggestedMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    aiSuggestedHeroes.forEach(s => {
+      map[s.hero.toLowerCase()] = s.reason;
+    });
+    return map;
+  }, [aiSuggestedHeroes]);
+
   const aiSuggested = useMemo(() => {
     return filteredHeroes.filter(h => 
-      aiSuggestedHeroes.includes(h.name) && !suggestedHeroes.includes(h.name)
+      aiSuggestedNames.some(name => name.toLowerCase() === h.name.toLowerCase()) && 
+      !suggestedHeroes.includes(h.name)
     );
-  }, [filteredHeroes, aiSuggestedHeroes, suggestedHeroes]);
+  }, [filteredHeroes, aiSuggestedNames, suggestedHeroes]);
 
   const allSuggestedNames = useMemo(() => {
-    return [...suggestedHeroes, ...aiSuggestedHeroes];
-  }, [suggestedHeroes, aiSuggestedHeroes]);
+    return [...suggestedHeroes, ...aiSuggestedNames];
+  }, [suggestedHeroes, aiSuggestedNames]);
 
   const others = useMemo(() => {
-    return filteredHeroes.filter(h => !allSuggestedNames.includes(h.name));
+    return filteredHeroes.filter(h => 
+      !allSuggestedNames.some(name => name.toLowerCase() === h.name.toLowerCase())
+    );
   }, [filteredHeroes, allSuggestedNames]);
 
   return (
@@ -72,70 +89,73 @@ const HeroPickerModal = ({
           />
         </div>
 
-        <div className="overflow-y-auto max-h-[55vh] space-y-4 px-1">
-          {/* AI Suggestions Section */}
-          {(isLoadingAI || aiSuggested.length > 0) && (
-            <div>
-              <h3 className="text-sm font-semibold text-yellow-500 mb-2 flex items-center gap-2">
-                <Sparkles className="w-4 h-4" />
-                پیشنهاد هوش مصنوعی
-                {isLoadingAI && <Loader2 className="w-4 h-4 animate-spin" />}
-              </h3>
-              {isLoadingAI ? (
-                <div className="flex items-center justify-center py-4">
-                  <p className="text-sm text-muted-foreground">در حال تحلیل ترکیب تیم...</p>
-                </div>
-              ) : (
+        <TooltipProvider delayDuration={200}>
+          <div className="overflow-y-auto max-h-[55vh] space-y-4 px-1">
+            {/* AI Suggestions Section */}
+            {(isLoadingAI || aiSuggested.length > 0) && (
+              <div>
+                <h3 className="text-sm font-semibold text-yellow-500 mb-2 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  پیشنهاد هوش مصنوعی
+                  {isLoadingAI && <Loader2 className="w-4 h-4 animate-spin" />}
+                </h3>
+                {isLoadingAI ? (
+                  <div className="flex items-center justify-center py-4">
+                    <p className="text-sm text-muted-foreground">در حال تحلیل ترکیب تیم...</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+                    {aiSuggested.map(hero => (
+                      <HeroItem
+                        key={hero.name}
+                        hero={hero}
+                        onSelect={onSelect}
+                        disabled={disabledHeroes.includes(hero.name)}
+                        aiSuggested
+                        reason={aiSuggestedMap[hero.name.toLowerCase()]}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Composition Suggestions Section */}
+            {suggested.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-primary mb-2 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                  پیشنهادی بر اساس ترکیب
+                </h3>
                 <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
-                  {aiSuggested.map(hero => (
+                  {suggested.map(hero => (
                     <HeroItem
                       key={hero.name}
                       hero={hero}
                       onSelect={onSelect}
                       disabled={disabledHeroes.includes(hero.name)}
-                      aiSuggested
+                      suggested
                     />
                   ))}
                 </div>
-              )}
-            </div>
-          )}
+              </div>
+            )}
 
-          {/* Composition Suggestions Section */}
-          {suggested.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold text-primary mb-2 flex items-center gap-2">
-                <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                پیشنهادی بر اساس ترکیب
-              </h3>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-2">همه هیروها</h3>
               <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
-                {suggested.map(hero => (
+                {others.map(hero => (
                   <HeroItem
                     key={hero.name}
                     hero={hero}
                     onSelect={onSelect}
                     disabled={disabledHeroes.includes(hero.name)}
-                    suggested
                   />
                 ))}
               </div>
             </div>
-          )}
-
-          <div>
-            <h3 className="text-sm font-semibold text-muted-foreground mb-2">همه هیروها</h3>
-            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
-              {others.map(hero => (
-                <HeroItem
-                  key={hero.name}
-                  hero={hero}
-                  onSelect={onSelect}
-                  disabled={disabledHeroes.includes(hero.name)}
-                />
-              ))}
-            </div>
           </div>
-        </div>
+        </TooltipProvider>
       </DialogContent>
     </Dialog>
   );
@@ -147,10 +167,11 @@ interface HeroItemProps {
   disabled: boolean;
   suggested?: boolean;
   aiSuggested?: boolean;
+  reason?: string;
 }
 
-const HeroItem = ({ hero, onSelect, disabled, suggested, aiSuggested }: HeroItemProps) => {
-  return (
+const HeroItem = ({ hero, onSelect, disabled, suggested, aiSuggested, reason }: HeroItemProps) => {
+  const content = (
     <button
       onClick={() => !disabled && onSelect(hero)}
       disabled={disabled}
@@ -181,6 +202,21 @@ const HeroItem = ({ hero, onSelect, disabled, suggested, aiSuggested }: HeroItem
       </span>
     </button>
   );
+
+  if (aiSuggested && reason) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          {content}
+        </TooltipTrigger>
+        <TooltipContent side="top" className="bg-yellow-500/90 text-black font-medium max-w-[200px] text-center">
+          <p>{reason}</p>
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return content;
 };
 
 export default HeroPickerModal;
