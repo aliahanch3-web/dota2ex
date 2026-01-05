@@ -36,7 +36,7 @@ serve(async (req) => {
           },
           {
             role: "user",
-            content: `Provide a detailed guide for the Dota 2 hero "${heroName}" in Persian/Farsi language.`
+            content: `Provide a detailed guide for the Dota 2 hero "${heroName}" in Persian/Farsi language. Include information about the hero's facets (the new hero customization system in Dota 2).`
           }
         ],
         tools: [
@@ -44,7 +44,7 @@ serve(async (req) => {
             type: "function",
             function: {
               name: "hero_guide",
-              description: "Return a complete hero guide with abilities, items, and playstyle",
+              description: "Return a complete hero guide with abilities, items, facets and playstyle",
               parameters: {
                 type: "object",
                 properties: {
@@ -62,6 +62,19 @@ serve(async (req) => {
                         }
                       },
                       required: ["name", "description", "tips"]
+                    }
+                  },
+                  facets: {
+                    type: "array",
+                    description: "Hero facets - the new customization options in Dota 2",
+                    items: {
+                      type: "object",
+                      properties: {
+                        name: { type: "string", description: "Facet name in English" },
+                        description: { type: "string", description: "What this facet does in Persian" },
+                        recommendation: { type: "string", description: "When to pick this facet in Persian" }
+                      },
+                      required: ["name", "description", "recommendation"]
                     }
                   },
                   skillBuild: {
@@ -94,7 +107,7 @@ serve(async (req) => {
                     required: ["laning", "midGame", "lateGame", "tips"]
                   }
                 },
-                required: ["abilities", "skillBuild", "items", "playstyle"]
+                required: ["abilities", "facets", "skillBuild", "items", "playstyle"]
               }
             }
           }
