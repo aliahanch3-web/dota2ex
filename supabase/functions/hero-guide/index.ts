@@ -1,4 +1,3 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -17,76 +16,121 @@ serve(async (req) => {
 
     console.log(`Generating guide for hero: ${heroName}`);
 
-    const response = await fetch("https://api.langdock.com/anthropic/eu/v1/messages", {
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${Deno.env.get("LANGDOCK_API_KEY")}`,
+        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 2000,
+        model: "google/gemini-2.5-flash",
         messages: [
           {
+            role: "system",
+            content: "You are a Dota 2 expert. Always respond in Persian/Farsi language."
+          },
+          {
             role: "user",
-            content: `You are a Dota 2 expert. Provide a detailed guide for the hero "${heroName}" in Persian/Farsi language.
-
-Return ONLY a valid JSON object with this exact structure (no markdown, no extra text):
-{
-  "abilities": [
-    {
-      "name": "نام اسکیل به انگلیسی",
-      "description": "توضیح کوتاه درباره اسکیل و نحوه استفاده",
-      "tips": ["نکته 1", "نکته 2"]
-    }
-  ],
-  "skillBuild": {
-    "early": "ترتیب اسکیل گیری در لول‌های اولیه (1-6)",
-    "priority": "اولویت اسکیل گیری",
-    "ultimate": "زمان گرفتن اولتیمیت"
-  },
-  "items": {
-    "starting": ["آیتم شروع 1", "آیتم شروع 2"],
-    "early": ["آیتم‌های اوایل بازی"],
-    "core": ["آیتم‌های اصلی"],
-    "luxury": ["آیتم‌های لوکس"]
-  },
-  "playstyle": {
-    "laning": "نحوه بازی در لین",
-    "midGame": "نحوه بازی در میدگیم",
-    "lateGame": "نحوه بازی در لیت‌گیم",
-    "tips": ["نکته کلی 1", "نکته کلی 2", "نکته کلی 3"]
-  }
-}`
+            content: `Provide a detailed guide for the Dota 2 hero "${heroName}" in Persian/Farsi language.`
           }
         ],
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "hero_guide",
+              description: "Return a complete hero guide with abilities, items, and playstyle",
+              parameters: {
+                type: "object",
+                properties: {
+                  abilities: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        name: { type: "string", description: "Ability name in English" },
+                        description: { type: "string", description: "Short description in Persian" },
+                        tips: { 
+                          type: "array", 
+                          items: { type: "string" },
+                          description: "Tips for using this ability in Persian"
+                        }
+                      },
+                      required: ["name", "description", "tips"]
+                    }
+                  },
+                  skillBuild: {
+                    type: "object",
+                    properties: {
+                      early: { type: "string", description: "Skill order for levels 1-6 in Persian" },
+                      priority: { type: "string", description: "Skill priority in Persian" },
+                      ultimate: { type: "string", description: "When to get ultimate in Persian" }
+                    },
+                    required: ["early", "priority", "ultimate"]
+                  },
+                  items: {
+                    type: "object",
+                    properties: {
+                      starting: { type: "array", items: { type: "string" } },
+                      early: { type: "array", items: { type: "string" } },
+                      core: { type: "array", items: { type: "string" } },
+                      luxury: { type: "array", items: { type: "string" } }
+                    },
+                    required: ["starting", "early", "core", "luxury"]
+                  },
+                  playstyle: {
+                    type: "object",
+                    properties: {
+                      laning: { type: "string", description: "Laning phase tips in Persian" },
+                      midGame: { type: "string", description: "Mid game tips in Persian" },
+                      lateGame: { type: "string", description: "Late game tips in Persian" },
+                      tips: { type: "array", items: { type: "string" }, description: "General tips in Persian" }
+                    },
+                    required: ["laning", "midGame", "lateGame", "tips"]
+                  }
+                },
+                required: ["abilities", "skillBuild", "items", "playstyle"]
+              }
+            }
+          }
+        ],
+        tool_choice: { type: "function", function: { name: "hero_guide" } }
       }),
     });
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: "محدودیت درخواست، لطفا کمی صبر کنید." }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: "اعتبار ناکافی، لطفا اعتبار خود را افزایش دهید." }), {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      const errorText = await response.text();
+      console.error("AI gateway error:", response.status, errorText);
+      throw new Error("AI gateway error");
+    }
 
     const data = await response.json();
     console.log("API Response received");
 
-    if (!data.content || !data.content[0]) {
-      throw new Error("Invalid API response structure");
+    // Extract the tool call result
+    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    if (!toolCall || toolCall.function.name !== "hero_guide") {
+      throw new Error("Invalid response structure from AI");
     }
 
-    const text = data.content[0].text;
-    
-    // Parse the JSON response
-    let guide;
-    try {
-      // Try to extract JSON from the response
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        guide = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error("No JSON found in response");
-      }
-    } catch (parseError) {
-      console.error("JSON parse error:", parseError);
-      console.log("Raw text:", text);
-      throw new Error("Failed to parse AI response as JSON");
-    }
+    const guide = JSON.parse(toolCall.function.arguments);
 
     return new Response(JSON.stringify({ guide }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
