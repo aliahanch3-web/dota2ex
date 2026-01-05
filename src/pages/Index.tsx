@@ -1,9 +1,12 @@
 import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
+import { Users } from "lucide-react";
 import { heroes, Hero, Role } from "@/data/heroes";
 import { HeroCard } from "@/components/HeroCard";
 import { HeroModal } from "@/components/HeroModal";
 import { RoleFilter } from "@/components/RoleFilter";
 import { SearchBar } from "@/components/SearchBar";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -31,14 +34,22 @@ const Index = () => {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50">
         <div className="container mx-auto px-4 py-6">
-          <div className="text-center mb-6">
-            <h1 className="text-4xl md:text-5xl font-bold mb-2">
-              <span className="text-gradient">Dota 2</span>{" "}
-              <span className="text-foreground">Heroes</span>
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              تمام ۱۲۷ هیروی دوتا ۲ با اطلاعات کامل
-            </p>
+          <div className="flex items-center justify-between mb-6">
+            <div className="text-center flex-1">
+              <h1 className="text-4xl md:text-5xl font-bold mb-2">
+                <span className="text-gradient">Dota 2</span>{" "}
+                <span className="text-foreground">Heroes</span>
+              </h1>
+              <p className="text-muted-foreground text-lg">
+                تمام ۱۲۷ هیروی دوتا ۲ با اطلاعات کامل
+              </p>
+            </div>
+            <Link to="/team-builder">
+              <Button variant="outline" className="gap-2 shrink-0">
+                <Users className="w-4 h-4" />
+                تیم ساز
+              </Button>
+            </Link>
           </div>
 
           {/* Search */}
