@@ -10,6 +10,7 @@ import TeamAnalysisCard from "@/components/TeamAnalysisCard";
 import CounterPickSection from "@/components/CounterPickSection";
 import { Button } from "@/components/ui/button";
 import { useAISuggestions } from "@/hooks/useAISuggestions";
+import { HeroGuideModal } from "@/components/HeroGuideModal";
 
 const TeamBuilder = () => {
   const [selectedHeroes, setSelectedHeroes] = useState<Record<PositionKey, Hero | null>>({
@@ -23,6 +24,7 @@ const TeamBuilder = () => {
   const [activeSlot, setActiveSlot] = useState<PositionKey | null>(null);
   const [enemyHeroes, setEnemyHeroes] = useState<string[]>([]);
   const [isEnemyPickerOpen, setIsEnemyPickerOpen] = useState(false);
+  const [selectedHeroForGuide, setSelectedHeroForGuide] = useState<Hero | null>(null);
 
   const { 
     aiSuggestions, 
@@ -226,7 +228,13 @@ const TeamBuilder = () => {
               position={pos.label}
               role={pos.role}
               hero={selectedHeroes[pos.key]}
-              onClick={() => setActiveSlot(pos.key)}
+              onClick={() => {
+                if (selectedHeroes[pos.key]) {
+                  setSelectedHeroForGuide(selectedHeroes[pos.key]);
+                } else {
+                  setActiveSlot(pos.key);
+                }
+              }}
               onClear={() => handleClearHero(pos.key)}
               suggested={getSlotSuggested(pos.key)}
             />
@@ -384,6 +392,13 @@ const TeamBuilder = () => {
         onClose={() => setIsEnemyPickerOpen(false)}
         onSelect={handleAddEnemy}
         selectedEnemies={enemyHeroes}
+      />
+
+      {/* Hero Guide Modal */}
+      <HeroGuideModal
+        hero={selectedHeroForGuide}
+        isOpen={!!selectedHeroForGuide}
+        onClose={() => setSelectedHeroForGuide(null)}
       />
     </div>
   );
