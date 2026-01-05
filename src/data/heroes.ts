@@ -15,10 +15,11 @@ const getHeroImage = (name: string): string => {
 };
 
 const getPrimaryRole = (role: string): 'Carry' | 'Support' | 'Offlane' | 'Mid' => {
-  const roleLower = role.toLowerCase();
-  if (roleLower.includes('carry')) return 'Carry';
-  if (roleLower.includes('mid')) return 'Mid';
-  if (roleLower.includes('offlane')) return 'Offlane';
+  // Prefer the FIRST role token (e.g. "Mid/Carry" => Mid)
+  const first = role.split('/')[0]?.trim().toLowerCase() || "";
+  if (first.includes('mid')) return 'Mid';
+  if (first.includes('carry')) return 'Carry';
+  if (first.includes('offlane')) return 'Offlane';
   return 'Support';
 };
 
@@ -57,7 +58,7 @@ export const heroes: Hero[] = [
   { name: "Faceless Void", role: "Carry", primaryRole: getPrimaryRole("Carry"), quickTip: "Chrono", keyItems: ["Maelstrom", "BKB"], synergy: "Invoker", counters: "Viper", image: getHeroImage("Faceless Void") },
   { name: "Gyrocopter", role: "Carry", primaryRole: getPrimaryRole("Carry"), quickTip: "AoE", keyItems: ["BKB", "Satanic"], synergy: "Io", counters: "AA", image: getHeroImage("Gyrocopter") },
   { name: "Hoodwink", role: "Support", primaryRole: getPrimaryRole("Support"), quickTip: "Burst", keyItems: ["Gleipnir", "Aghanim"], synergy: "Mars", counters: "BKB cores", image: getHeroImage("Hoodwink") },
-  { name: "Huskar", role: "Carry/Mid", primaryRole: getPrimaryRole("Carry/Mid"), quickTip: "Low HP", keyItems: ["Armlet", "BKB"], synergy: "Dazzle", counters: "Viper", image: getHeroImage("Huskar") },
+  { name: "Huskar", role: "Mid/Carry", primaryRole: getPrimaryRole("Mid/Carry"), quickTip: "Low HP", keyItems: ["Armlet", "BKB"], synergy: "Dazzle", counters: "Viper", image: getHeroImage("Huskar") },
   { name: "Invoker", role: "Mid", primaryRole: getPrimaryRole("Mid"), quickTip: "Skill", keyItems: ["Aghanim", "BKB"], synergy: "Void", counters: "Brood", image: getHeroImage("Invoker") },
   { name: "Io", role: "Support", primaryRole: getPrimaryRole("Support"), quickTip: "Save", keyItems: ["Holy Locket", "Glimmer"], synergy: "Tiny", counters: "AA", image: getHeroImage("Wisp") },
   { name: "Jakiro", role: "Support", primaryRole: getPrimaryRole("Support"), quickTip: "Push", keyItems: ["Euls", "Aghanim"], synergy: "Faceless Void", counters: "Silencer", image: getHeroImage("Jakiro") },
