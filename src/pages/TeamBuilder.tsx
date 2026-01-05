@@ -56,11 +56,40 @@ const TeamBuilder = () => {
     ) || null;
   }, [selectedHeroes]);
 
-  const handleSelectHero = (hero: Hero) => {
-    if (activeSlot) {
-      setSelectedHeroes(prev => ({ ...prev, [activeSlot]: hero }));
-      setActiveSlot(null);
+  // Map hero's primaryRole to the correct position
+  const getRolePosition = (role: Hero['primaryRole']): PositionKey => {
+    switch (role) {
+      case 'Carry': return 'pos1';
+      case 'Mid': return 'pos2';
+      case 'Offlane': return 'pos3';
+      case 'Support': 
+        // Check if pos4 is empty, otherwise use pos5
+        if (!selectedHeroes.pos4) return 'pos4';
+        return 'pos5';
+      default: return 'pos4';
     }
+  };
+
+  const handleSelectHero = (hero: Hero) => {
+    const targetPosition = getRolePosition(hero.primaryRole);
+    
+    // If target position is already occupied, show toast or swap
+    if (selectedHeroes[targetPosition]) {
+      // Find an empty slot for support heroes
+      if (hero.primaryRole === 'Support') {
+        if (!selectedHeroes.pos4) {
+          setSelectedHeroes(prev => ({ ...prev, pos4: hero }));
+        } else if (!selectedHeroes.pos5) {
+          setSelectedHeroes(prev => ({ ...prev, pos5: hero }));
+        }
+      } else {
+        // Replace the hero in the correct position
+        setSelectedHeroes(prev => ({ ...prev, [targetPosition]: hero }));
+      }
+    } else {
+      setSelectedHeroes(prev => ({ ...prev, [targetPosition]: hero }));
+    }
+    setActiveSlot(null);
   };
 
   const handleClearHero = (position: PositionKey) => {
@@ -116,7 +145,7 @@ const TeamBuilder = () => {
           <p className="text-muted-foreground">
             روی هر جای خالی کلیک کنید و هیروی مورد نظر را انتخاب کنید.
             <br />
-            <span className="text-primary text-sm">پیشنهادات بر اساس ترکیب‌های حرفه‌ای نمایش داده می‌شوند.</span>
+            <span className="text-primary text-sm">هیروها بر اساس نقش خودشان در جایگاه درست قرار می‌گیرند.</span>
           </p>
         </div>
 
