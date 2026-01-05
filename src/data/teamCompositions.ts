@@ -9,6 +9,7 @@ export interface TeamComposition {
 }
 
 export const teamCompositions: TeamComposition[] = [
+  // Original compositions
   {
     name: "گنبد مرگ (The Chrono Combo)",
     pos1: "Faceless Void",
@@ -53,6 +54,187 @@ export const teamCompositions: TeamComposition[] = [
     pos4: "Tiny",
     pos5: "Io",
     playstyle: "سرعتی (Tempo): با سرعت بالا در مپ جابه‌جا شوید و اجازه ندهید دشمن روی شما تمرکز کند."
+  },
+  // New compositions
+  {
+    name: "سونامی جادویی (Magic Burst)",
+    pos1: "Gyrocopter",
+    pos2: "Leshrac",
+    pos3: "Enigma",
+    pos4: "Dark Willow",
+    pos5: "Crystal Maiden",
+    playstyle: "تیمی (Teamfight): Black Hole + ترکیب جادوهای AoE برای نابودی کامل دشمن."
+  },
+  {
+    name: "ارتش احضارها (Summon Army)",
+    pos1: "Terrorblade",
+    pos2: "Visage",
+    pos3: "Beastmaster",
+    pos4: "Enigma",
+    pos5: "Chen",
+    playstyle: "پوش (Push): با ارتش احضارها تاورها و روشن را سریع نابود کنید."
+  },
+  {
+    name: "ضربه و فرار (Hit & Run)",
+    pos1: "Weaver",
+    pos2: "Queen of Pain",
+    pos3: "Batrider",
+    pos4: "Earth Spirit",
+    pos5: "Vengeful Spirit",
+    playstyle: "شکار (Gank): پیک کردن هیروهای تنها و فرار سریع قبل از واکنش دشمن."
+  },
+  {
+    name: "اژدهای آتشین (Dragon Knight Deathball)",
+    pos1: "Drow Ranger",
+    pos2: "Dragon Knight",
+    pos3: "Lycan",
+    pos4: "Shadow Shaman",
+    pos5: "Ogre Magi",
+    playstyle: "پوش (Push): با اورا Drow و تبدیل‌های قوی، تاورها را زود بیندازید."
+  },
+  {
+    name: "نگهبانان Late Game",
+    pos1: "Medusa",
+    pos2: "Invoker",
+    pos3: "Tidehunter",
+    pos4: "Rubick",
+    pos5: "Oracle",
+    playstyle: "دفاعی (Turtle): بازی را کش دهید تا Medusa و Invoker آیتم بگیرند."
+  },
+  {
+    name: "سواران روح (Spirit Brothers)",
+    pos1: "Juggernaut",
+    pos2: "Storm Spirit",
+    pos3: "Mars",
+    pos4: "Earth Spirit",
+    pos5: "Lich",
+    playstyle: "سرعتی (Tempo): با تحرک بالا و اسکیل‌شات، میدفایت‌ها را ببرید."
+  },
+  {
+    name: "شب‌پره‌ها (Night Stalkers)",
+    pos1: "Slark",
+    pos2: "Night Stalker",
+    pos3: "Dark Seer",
+    pos4: "Nyx Assassin",
+    pos5: "Bane",
+    playstyle: "شکار (Gank): در شب حمله کنید و با ویژن برتر دشمن را شکار کنید."
+  },
+  {
+    name: "دیوار فیزیکی (Physical Wall)",
+    pos1: "Phantom Assassin",
+    pos2: "Templar Assassin",
+    pos3: "Slardar",
+    pos4: "Vengeful Spirit",
+    pos5: "Dazzle",
+    playstyle: "تیمی (Teamfight): آرمور دشمن را کاهش دهید و با ضربات فیزیکی نابود کنید."
+  },
+  {
+    name: "کنترل کامل (Lockdown)",
+    pos1: "Wraith King",
+    pos2: "Outworld Destroyer",
+    pos3: "Legion Commander",
+    pos4: "Spirit Breaker",
+    pos5: "Shadow Shaman",
+    playstyle: "شکار (Gank): با استان‌های پشت سر هم، دشمن حتی نمی‌تواند حرکت کند."
+  },
+  {
+    name: "ایمورتال (Undying Team)",
+    pos1: "Lifestealer",
+    pos2: "Necrophos",
+    pos3: "Underlord",
+    pos4: "Undying",
+    pos5: "Abaddon",
+    playstyle: "تیمی (Teamfight): با ساستین و هیل بالا، هیچ‌وقت نمی‌میرید."
+  },
+  {
+    name: "اسپلیت پوش (Rat Dota)",
+    pos1: "Naga Siren",
+    pos2: "Tinker",
+    pos3: "Nature's Prophet",
+    pos4: "Keeper of the Light",
+    pos5: "Shadow Demon",
+    playstyle: "پوش (Push): همیشه لین‌ها را فشار دهید و هیچ‌وقت تیم‌فایت نکنید."
+  },
+  {
+    name: "آتش و یخ (Fire & Ice)",
+    pos1: "Morphling",
+    pos2: "Lina",
+    pos3: "Phoenix",
+    pos4: "Grimstroke",
+    pos5: "Crystal Maiden",
+    playstyle: "تیمی (Teamfight): ترکیب المنت‌ها برای دمیج ماکسیمم."
+  },
+  {
+    name: "بمباران هوایی (Air Strike)",
+    pos1: "Gyrocopter",
+    pos2: "Windranger",
+    pos3: "Batrider",
+    pos4: "Phoenix",
+    pos5: "Winter Wyvern",
+    playstyle: "تیمی (Teamfight): از هوا حمله کنید و با اولتی‌های AoE نابود کنید."
+  },
+  {
+    name: "ربات‌های جنگی (Tinker Stack)",
+    pos1: "Arc Warden",
+    pos2: "Tinker",
+    pos3: "Clockwerk",
+    pos4: "Techies",
+    pos5: "Disruptor",
+    playstyle: "دفاعی (Turtle): با ماین و کنترل، دشمن را از نزدیک شدن بترسانید."
+  },
+  {
+    name: "نینجاهای سایه (Shadow Assassins)",
+    pos1: "Phantom Assassin",
+    pos2: "Shadow Fiend",
+    pos3: "Pangolier",
+    pos4: "Nyx Assassin",
+    pos5: "Shadow Demon",
+    playstyle: "شکار (Gank): از سایه‌ها ظاهر شوید و سریع بکشید."
+  },
+  {
+    name: "دیوانه‌ها (Berserkers)",
+    pos1: "Ursa",
+    pos2: "Huskar",
+    pos3: "Axe",
+    pos4: "Tusk",
+    pos5: "Warlock",
+    playstyle: "تیمی (Teamfight): با تهاجم شدید اوایل بازی، دشمن را له کنید."
+  },
+  {
+    name: "هیل ماشین (Heal Machine)",
+    pos1: "Alchemist",
+    pos2: "Necrophos",
+    pos3: "Abaddon",
+    pos4: "Undying",
+    pos5: "Oracle",
+    playstyle: "دفاعی (Turtle): با هیل و ساستین بی‌پایان، هیچ‌کس نمی‌میرد."
+  },
+  {
+    name: "سرعت نور (Lightning Fast)",
+    pos1: "Bloodseeker",
+    pos2: "Storm Spirit",
+    pos3: "Primal Beast",
+    pos4: "Spirit Breaker",
+    pos5: "Io",
+    playstyle: "سرعتی (Tempo): با سرعت حرکت بالا، همه جا حضور داشته باشید."
+  },
+  {
+    name: "وحشت شب (Night Terror)",
+    pos1: "Phantom Lancer",
+    pos2: "Night Stalker",
+    pos3: "Broodmother",
+    pos4: "Nyx Assassin",
+    pos5: "Bane",
+    playstyle: "شکار (Gank): در شب با ویژن برتر شکار کنید."
+  },
+  {
+    name: "سیل سبز (Nature's Wrath)",
+    pos1: "Naga Siren",
+    pos2: "Meepo",
+    pos3: "Nature's Prophet",
+    pos4: "Treant Protector",
+    pos5: "Enchantress",
+    playstyle: "پوش (Push): با کریپ‌های جنگل و ایلوژن‌ها نقشه را بگیرید."
   }
 ];
 
