@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, RotateCcw, Sparkles } from "lucide-react";
 import { Hero, heroes } from "@/data/heroes";
@@ -6,6 +6,7 @@ import { positions, PositionKey, getSuggestedHeroes, teamCompositions } from "@/
 import HeroSlot from "@/components/HeroSlot";
 import HeroPickerModal from "@/components/HeroPickerModal";
 import { Button } from "@/components/ui/button";
+import { useAISuggestions } from "@/hooks/useAISuggestions";
 
 const TeamBuilder = () => {
   const [selectedHeroes, setSelectedHeroes] = useState<Record<PositionKey, Hero | null>>({
@@ -17,6 +18,16 @@ const TeamBuilder = () => {
   });
 
   const [activeSlot, setActiveSlot] = useState<PositionKey | null>(null);
+  const { aiSuggestions, isLoadingAI, getAISuggestions, clearAISuggestions } = useAISuggestions();
+
+  // Fetch AI suggestions when slot changes
+  useEffect(() => {
+    if (activeSlot) {
+      getAISuggestions(selectedHeroes, activeSlot);
+    } else {
+      clearAISuggestions();
+    }
+  }, [activeSlot, selectedHeroes, getAISuggestions, clearAISuggestions]);
 
   const selectedHeroNames = useMemo(() => {
     const result: Record<PositionKey, string | null> = {
@@ -190,6 +201,8 @@ const TeamBuilder = () => {
           onClose={() => setActiveSlot(null)}
           onSelect={handleSelectHero}
           suggestedHeroes={suggestedHeroes}
+          aiSuggestedHeroes={aiSuggestions}
+          isLoadingAI={isLoadingAI}
           disabledHeroes={disabledHeroes}
           position={positions.find(p => p.key === activeSlot)?.label || ""}
           role={positions.find(p => p.key === activeSlot)?.role || ""}
