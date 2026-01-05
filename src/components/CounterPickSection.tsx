@@ -1,7 +1,7 @@
 import { Swords, Loader2, X, Plus } from "lucide-react";
 import { Hero, heroes } from "@/data/heroes";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export interface CounterSuggestion {
   hero: string;
@@ -92,47 +92,51 @@ const CounterPickSection = ({
               <span className="text-sm text-muted-foreground">در حال تحلیل پیک دشمن...</span>
             </div>
           ) : counterSuggestions.length > 0 ? (
-            <TooltipProvider delayDuration={200}>
-              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
-                {counterSuggestions.map(suggestion => {
-                  const hero = heroes.find(h => h.name.toLowerCase() === suggestion.hero.toLowerCase());
-                  if (!hero) return null;
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+              {counterSuggestions.map(suggestion => {
+                const hero = heroes.find(h => h.name.toLowerCase() === suggestion.hero.toLowerCase());
+                if (!hero) return null;
 
-                  return (
-                    <Tooltip key={suggestion.hero}>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={() => onSelectCounter(hero)}
-                          className="flex flex-col items-center p-1 rounded-lg bg-red-500/20 hover:bg-red-500/30 ring-1 ring-red-500 transition-all duration-200"
-                        >
-                          <div className="relative w-12 h-12 rounded-lg overflow-hidden">
-                            <img
-                              src={hero.image}
-                              alt={hero.name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = "/placeholder.svg";
-                              }}
-                            />
-                          </div>
-                          <span className="text-[10px] text-foreground text-center mt-1 line-clamp-1 w-full">
-                            {hero.name}
-                          </span>
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="bg-red-500/90 text-white font-medium max-w-[250px]">
-                        <p className="mb-1">{suggestion.reason}</p>
-                        {suggestion.countersAgainst?.length > 0 && (
-                          <p className="text-xs opacity-80">
-                            کانتر: {suggestion.countersAgainst.join(", ")}
-                          </p>
-                        )}
-                      </TooltipContent>
-                    </Tooltip>
-                  );
-                })}
-              </div>
-            </TooltipProvider>
+                return (
+                  <Popover key={suggestion.hero}>
+                    <PopoverTrigger asChild>
+                      <button
+                        className="flex flex-col items-center p-1 rounded-lg bg-red-500/20 hover:bg-red-500/30 ring-1 ring-red-500 transition-all duration-200"
+                      >
+                        <div className="relative w-12 h-12 rounded-lg overflow-hidden">
+                          <img
+                            src={hero.image}
+                            alt={hero.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/placeholder.svg";
+                            }}
+                          />
+                        </div>
+                        <span className="text-[10px] text-foreground text-center mt-1 line-clamp-1 w-full">
+                          {hero.name}
+                        </span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent side="top" className="bg-red-500/90 text-white font-medium max-w-[250px] p-3">
+                      <p className="mb-2">{suggestion.reason}</p>
+                      {suggestion.countersAgainst?.length > 0 && (
+                        <p className="text-xs opacity-80 mb-3">
+                          کانتر: {suggestion.countersAgainst.join(", ")}
+                        </p>
+                      )}
+                      <Button 
+                        size="sm" 
+                        onClick={() => onSelectCounter(hero)}
+                        className="w-full bg-white/20 hover:bg-white/30 text-white"
+                      >
+                        انتخاب این هیرو
+                      </Button>
+                    </PopoverContent>
+                  </Popover>
+                );
+              })}
+            </div>
           ) : (
             <p className="text-sm text-muted-foreground text-center py-4">
               پیشنهادی یافت نشد
