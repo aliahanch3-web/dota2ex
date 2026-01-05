@@ -1,12 +1,15 @@
-import { Sparkles, Loader2, Shield, AlertTriangle, Clock } from "lucide-react";
-import { TeamAnalysis } from "@/hooks/useAISuggestions";
+import { Sparkles, Loader2, Shield, AlertTriangle, Clock, RefreshCw } from "lucide-react";
+import { TeamAnalysis, ReplacementSuggestion } from "@/hooks/useAISuggestions";
+import { heroes } from "@/data/heroes";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TeamAnalysisCardProps {
   analysis: TeamAnalysis | null;
   isLoading: boolean;
+  onReplaceHero?: (position: string, heroName: string) => void;
 }
 
-const TeamAnalysisCard = ({ analysis, isLoading }: TeamAnalysisCardProps) => {
+const TeamAnalysisCard = ({ analysis, isLoading, onReplaceHero }: TeamAnalysisCardProps) => {
   if (isLoading) {
     return (
       <div className="max-w-2xl mx-auto bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6 text-center animate-fade-in">
@@ -82,6 +85,73 @@ const TeamAnalysisCard = ({ analysis, isLoading }: TeamAnalysisCardProps) => {
           </ul>
         </div>
       </div>
+
+      {/* Replacement Suggestions */}
+      {analysis.replacements && analysis.replacements.length > 0 && (
+        <div className="mt-6 bg-orange-500/10 border border-orange-500/20 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <RefreshCw className="w-4 h-4 text-orange-500" />
+            <h4 className="font-semibold text-orange-500">پیشنهاد جایگزین</h4>
+          </div>
+          <div className="space-y-3">
+            <TooltipProvider>
+              {analysis.replacements.map((replacement, idx) => {
+                const currentHero = heroes.find(h => h.name.toLowerCase() === replacement.currentHero.toLowerCase());
+                const suggestedHero = heroes.find(h => h.name.toLowerCase() === replacement.suggestedHero.toLowerCase());
+                
+                if (!currentHero || !suggestedHero) return null;
+                
+                return (
+                  <Tooltip key={idx}>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => onReplaceHero?.(replacement.position, replacement.suggestedHero)}
+                        className="w-full flex items-center gap-3 p-2 rounded-lg bg-background/50 hover:bg-orange-500/20 transition-colors cursor-pointer group"
+                      >
+                        {/* Current Hero */}
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={currentHero.image}
+                            alt={currentHero.name}
+                            className="w-10 h-10 rounded-lg opacity-50"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/placeholder.svg";
+                            }}
+                          />
+                          <span className="text-sm text-muted-foreground line-through">{currentHero.name}</span>
+                        </div>
+                        
+                        {/* Arrow */}
+                        <span className="text-orange-500 text-lg">→</span>
+                        
+                        {/* Suggested Hero */}
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={suggestedHero.image}
+                            alt={suggestedHero.name}
+                            className="w-10 h-10 rounded-lg ring-2 ring-orange-500/50 group-hover:ring-orange-500"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/placeholder.svg";
+                            }}
+                          />
+                          <span className="text-sm text-foreground font-medium">{suggestedHero.name}</span>
+                        </div>
+                        
+                        <span className="mr-auto text-xs text-orange-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                          کلیک برای جایگزینی
+                        </span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs">
+                      <p className="text-sm">{replacement.reason}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
+            </TooltipProvider>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

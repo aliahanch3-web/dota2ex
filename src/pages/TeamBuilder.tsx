@@ -223,7 +223,16 @@ const TeamBuilder = () => {
         {/* AI Team Analysis */}
         {(allHeroesSelected || isAnalyzing) && !matchedComposition && (
           <div className="mb-8">
-            <TeamAnalysisCard analysis={teamAnalysis} isLoading={isAnalyzing} />
+            <TeamAnalysisCard 
+              analysis={teamAnalysis} 
+              isLoading={isAnalyzing}
+              onReplaceHero={(position, heroName) => {
+                const hero = heroes.find(h => h.name.toLowerCase() === heroName.toLowerCase());
+                if (hero) {
+                  setSelectedHeroes(prev => ({ ...prev, [position]: hero }));
+                }
+              }}
+            />
           </div>
         )}
 
@@ -241,7 +250,16 @@ const TeamBuilder = () => {
             {/* Also show AI analysis below matched composition */}
             {(teamAnalysis || isAnalyzing) && (
               <div className="mt-4">
-                <TeamAnalysisCard analysis={teamAnalysis} isLoading={isAnalyzing} />
+                <TeamAnalysisCard 
+                  analysis={teamAnalysis} 
+                  isLoading={isAnalyzing}
+                  onReplaceHero={(position, heroName) => {
+                    const hero = heroes.find(h => h.name.toLowerCase() === heroName.toLowerCase());
+                    if (hero) {
+                      setSelectedHeroes(prev => ({ ...prev, [position]: hero }));
+                    }
+                  }}
+                />
               </div>
             )}
           </div>

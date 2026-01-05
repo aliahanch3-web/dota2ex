@@ -115,7 +115,7 @@ async function analyzeTeam(selectedHeroes: Record<string, any>, apiKey: string) 
     .map(([pos, hero]: [string, any]) => `${pos}: ${hero.name}`)
     .join(", ");
 
-  const systemPrompt = `You are a Dota 2 analyst. Analyze the team composition.
+const systemPrompt = `You are a Dota 2 analyst. Analyze the team composition.
 
 RESPOND ONLY WITH A VALID JSON OBJECT:
 {
@@ -123,8 +123,18 @@ RESPOND ONLY WITH A VALID JSON OBJECT:
   "description": "توضیح کوتاه فارسی درباره نحوه بازی این ترکیب (۳-۴ جمله)",
   "strengths": ["نقطه قوت ۱", "نقطه قوت ۲"],
   "weaknesses": ["نقطه ضعف ۱", "نقطه ضعف ۲"],
-  "timing": "زمان قدرت تیم (early/mid/late game)"
+  "timing": "زمان قدرت تیم (early/mid/late game)",
+  "replacements": [
+    {"currentHero": "Hero Name", "suggestedHero": "Hero Name", "position": "pos1", "reason": "دلیل فارسی کوتاه"},
+    {"currentHero": "Hero Name", "suggestedHero": "Hero Name", "position": "pos3", "reason": "دلیل فارسی کوتاه"}
+  ]
 }
+
+Rules for replacements:
+- Suggest 1-3 hero replacements to reduce team weaknesses
+- Each replacement should address a specific weakness
+- position should be the position key (pos1, pos2, pos3, pos4, pos5)
+- reason should explain how this reduces a weakness (max 15 words, in Persian)
 
 All text must be in Persian (Farsi).`;
 

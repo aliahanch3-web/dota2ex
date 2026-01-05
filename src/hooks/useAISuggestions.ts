@@ -10,12 +10,20 @@ export interface AISuggestion {
   reason: string;
 }
 
+export interface ReplacementSuggestion {
+  currentHero: string;
+  suggestedHero: string;
+  position: string;
+  reason: string;
+}
+
 export interface TeamAnalysis {
   playstyle: string;
   description: string;
   strengths: string[];
   weaknesses: string[];
   timing: string;
+  replacements?: ReplacementSuggestion[];
 }
 
 export const useAISuggestions = () => {
