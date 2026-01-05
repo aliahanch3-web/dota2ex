@@ -13,35 +13,49 @@ serve(async (req) => {
   }
 
   try {
-    const { heroName } = await req.json();
+    const { heroName, forceRefresh } = await req.json();
 
-    console.log(`Fetching guide for hero: ${heroName}`);
+    console.log(`Fetching guide for hero: ${heroName}, forceRefresh: ${forceRefresh}`);
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Check if guide exists in cache
-    const { data: cachedGuide, error: cacheError } = await supabase
-      .from('hero_guides_cache')
-      .select('guide_data')
-      .eq('hero_name', heroName.toLowerCase())
-      .maybeSingle();
+    // If forceRefresh, delete existing cache
+    if (forceRefresh) {
+      const { error: deleteError } = await supabase
+        .from('hero_guides_cache')
+        .delete()
+        .eq('hero_name', heroName.toLowerCase());
+      
+      if (deleteError) {
+        console.error("Failed to delete cache:", deleteError);
+      } else {
+        console.log(`Cache deleted for: ${heroName}`);
+      }
+    } else {
+      // Check if guide exists in cache
+      const { data: cachedGuide, error: cacheError } = await supabase
+        .from('hero_guides_cache')
+        .select('guide_data')
+        .eq('hero_name', heroName.toLowerCase())
+        .maybeSingle();
 
-    if (cacheError) {
-      console.error("Cache lookup error:", cacheError);
+      if (cacheError) {
+        console.error("Cache lookup error:", cacheError);
+      }
+
+      // Return cached guide if exists
+      if (cachedGuide) {
+        console.log(`Returning cached guide for: ${heroName}`);
+        return new Response(JSON.stringify({ guide: cachedGuide.guide_data }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
-    // Return cached guide if exists
-    if (cachedGuide) {
-      console.log(`Returning cached guide for: ${heroName}`);
-      return new Response(JSON.stringify({ guide: cachedGuide.guide_data }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    console.log(`No cache found, generating guide for: ${heroName}`);
+    console.log(`Generating fresh guide for: ${heroName}`);
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
