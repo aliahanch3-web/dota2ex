@@ -235,6 +235,206 @@ export const teamCompositions: TeamComposition[] = [
     pos4: "Treant Protector",
     pos5: "Enchantress",
     playstyle: "پوش (Push): با کریپ‌های جنگل و ایلوژن‌ها نقشه را بگیرید."
+  },
+  // From Excel File 1
+  {
+    name: "نفرین مرگبار",
+    pos1: "Muerta",
+    pos2: "Lina",
+    pos3: "Axe",
+    pos4: "Grimstroke",
+    pos5: "Lich",
+    playstyle: "ترکیب جادوی Grimstroke با اولتی‌های تک‌هدف."
+  },
+  {
+    name: "زره منفی",
+    pos1: "Slardar",
+    pos2: "Templar Assassin",
+    pos3: "Tidehunter",
+    pos4: "Vengeful Spirit",
+    pos5: "Dazzle",
+    playstyle: "رساندن زره دشمن به زیر صفر و وان‌شات کردن."
+  },
+  {
+    name: "استان بی‌پایان",
+    pos1: "Sven",
+    pos2: "Kunkka",
+    pos3: "Centaur Warrunner",
+    pos4: "Tiny",
+    pos5: "Lion",
+    playstyle: "قفل کردن دشمن (Lockdown) تا لحظه مرگ."
+  },
+  {
+    name: "تاریکی مطلق",
+    pos1: "Spectre",
+    pos2: "Night Stalker",
+    pos3: "Lycan",
+    pos4: "Bounty Hunter",
+    pos5: "Keeper of the Light",
+    playstyle: "از بین بردن ویژن دشمن و حمله در شب."
+  },
+  {
+    name: "احضار کنندگان",
+    pos1: "Wraith King",
+    pos2: "Broodmother",
+    pos3: "Beastmaster",
+    pos4: "Enigma",
+    pos5: "Chen",
+    playstyle: "پر کردن مپ با یونیت‌ها و تمام کردن بازی زیر ۲۰ دقیقه."
+  },
+  {
+    name: "ضدِ فیزیکی",
+    pos1: "Terrorblade",
+    pos2: "Necrophos",
+    pos3: "Underlord",
+    pos4: "Winter Wyvern",
+    pos5: "Omniknight",
+    playstyle: "مقابله با تیم‌هایی که فقط دمیج فیزیکی دارند."
+  },
+  {
+    name: "ضدِ جادو",
+    pos1: "Anti-Mage",
+    pos2: "Huskar",
+    pos3: "Doom",
+    pos4: "Nyx Assassin",
+    pos5: "Silencer",
+    playstyle: "فلج کردن هیروهای جادوگر و اینتلیجنس."
+  },
+  {
+    name: "کشش و رانش",
+    pos1: "Ursa",
+    pos2: "Puck",
+    pos3: "Magnus",
+    pos4: "Dark Seer",
+    pos5: "Disruptor",
+    playstyle: "جمع کردن دشمن در یک نقطه (Vacuum) و بستن راه."
+  },
+  {
+    name: "بمب متحرک",
+    pos1: "Lifestealer",
+    pos2: "Storm Spirit",
+    pos3: "Spirit Breaker",
+    pos4: "Earth Spirit",
+    pos5: "Io",
+    playstyle: "ورود ناگهانی به قلب دشمن با سرعت بسیار بالا."
+  },
+  {
+    name: "هیلِ بی‌نهایت",
+    pos1: "Morphling",
+    pos2: "Leshrac",
+    pos3: "Bristleback",
+    pos4: "Warlock",
+    pos5: "Oracle",
+    playstyle: "غیرممکن کردن مرگ یاران با هیل و زنده ماندن."
+  },
+  {
+    name: "کمین از غیب",
+    pos1: "Phantom Assassin",
+    pos2: "Tiny",
+    pos3: "Slardar",
+    pos4: "Mirana",
+    pos5: "Treant Protector",
+    playstyle: "حمله دسته‌جمعی در حالت Invisible (نامرئی)."
+  },
+  {
+    name: "کنترلِ زمین",
+    pos1: "Monkey King",
+    pos2: "Ember Spirit",
+    pos3: "Mars",
+    pos4: "Clockwerk",
+    pos5: "Snapfire",
+    playstyle: "استفاده از دیواره‌ها و موانع برای گیر انداختن حریف."
+  },
+  // From Excel File 2
+  {
+    name: "سلاخ‌خانه (Pure Damage)",
+    pos1: "Spectre",
+    pos2: "Timbersaw",
+    pos3: "Centaur Warrunner",
+    pos4: "Enchantress",
+    pos5: "Silencer",
+    playstyle: "تمرکز روی دمیج Pure که از زره و مقاومت جادویی رد می‌شود."
+  },
+  {
+    name: "تله‌ی یخی (Freeze & Burn)",
+    pos1: "Drow Ranger",
+    pos2: "Ancient Apparition",
+    pos3: "Tusk",
+    pos4: "Jakiro",
+    pos5: "Crystal Maiden",
+    playstyle: "کم کردن شدید سرعت حرکت و اتک دشمن و منجمد کردن آن‌ها."
+  },
+  {
+    name: "ضد حمله (The Rebound)",
+    pos1: "Terrorblade",
+    pos2: "Razor",
+    pos3: "Tidehunter",
+    pos4: "Earthshaker",
+    pos5: "Abaddon",
+    playstyle: "اجازه دهید دشمن حمله کند، سپس با آلتیمیت‌های دفاعی ورق را برگردانید."
+  },
+  {
+    name: "مانا سوزی (Mana Burn)",
+    pos1: "Anti-Mage",
+    pos2: "Invoker",
+    pos3: "Nyx Assassin",
+    pos4: "Lion",
+    pos5: "Keeper of the Light",
+    playstyle: "خالی کردن مانای کل تیم حریف در ۵ ثانیه اول فایت."
+  },
+  {
+    name: "بمباران هوایی ۲",
+    pos1: "Gyrocopter",
+    pos2: "Zeus",
+    pos3: "Dawnbreaker",
+    pos4: "Skywrath Mage",
+    pos5: "Snapfire",
+    playstyle: "استفاده از اسپل‌هایی که از آسمان روی سر دشمن می‌بارد (AOE Global)."
+  },
+  {
+    name: "پادشاهان تانک",
+    pos1: "Medusa",
+    pos2: "Dragon Knight",
+    pos3: "Pudge",
+    pos4: "Ogre Magi",
+    pos5: "Undying",
+    playstyle: "تیمی که به هیچ وجه در درگیری‌های طولانی نمیرد (High HP/EHP)."
+  },
+  {
+    name: "تفرقه بینداز و حکومت کن",
+    pos1: "Naga Siren",
+    pos2: "Lone Druid",
+    pos3: "Beastmaster",
+    pos4: "Nature's Prophet",
+    pos5: "Pugna",
+    playstyle: "فشار همزمان به ۳ لاین (Split Push)؛ دشمن نمی‌داند کجا را دفاع کند."
+  },
+  {
+    name: "کمبوی چرخشی (The Vortex)",
+    pos1: "Faceless Void",
+    pos2: "Enigma",
+    pos3: "Dark Seer",
+    pos4: "Phoenix",
+    pos5: "Warlock",
+    playstyle: "کشیدن همه به مرکز (Vacuum) و زدن سیاهچاله و گنبد همزمان."
+  },
+  {
+    name: "ترور از دور (Snipe Squad)",
+    pos1: "Sniper",
+    pos2: "Windranger",
+    pos3: "Viper",
+    pos4: "Hoodwink",
+    pos5: "Marci",
+    playstyle: "کشتن هیروهای حریف قبل از اینکه حتی بتوانند شما را روی مانیتور ببینند."
+  },
+  {
+    name: "ضدِ فیزیکی سنگین",
+    pos1: "Troll Warlord",
+    pos2: "Pangolier",
+    pos3: "Brewmaster",
+    pos4: "Keeper of the Light",
+    pos5: "Winter Wyvern",
+    playstyle: "استفاده از Blind و Disarm برای اینکه دشمن نتواند حتی یک ضربه فیزیکی بزند."
   }
 ];
 
