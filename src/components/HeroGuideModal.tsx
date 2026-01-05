@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Sword, Package, TrendingUp, Sparkles, X, Gem, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useHeroGuide } from "@/hooks/useHeroGuide";
+import getItemImage from "@/data/items";
 
 interface HeroGuideModalProps {
   hero: Hero | null;
@@ -183,44 +184,96 @@ export const HeroGuideModal = ({ hero, isOpen, onClose }: HeroGuideModalProps) =
                     <div className="bg-secondary/50 rounded-lg p-3">
                       <h4 className="font-medium text-foreground text-sm mb-2">آیتم‌های شروع</h4>
                       <div className="flex flex-wrap gap-2">
-                        {guide.items.starting.map((item, idx) => (
-                          <Badge key={idx} variant="outline" className="bg-background/50">
-                            {item}
-                          </Badge>
-                        ))}
+                        {guide.items.starting.map((item, idx) => {
+                          const src = getItemImage(item);
+                          return (
+                            <Badge key={idx} variant="outline" className="bg-background/50 flex items-center gap-2">
+                              {src ? (
+                                <img
+                                  src={src}
+                                  alt={item}
+                                  onError={(e) => {
+                                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                                  }}
+                                  className="w-6 h-6 object-contain rounded-sm"
+                                />
+                              ) : null}
+                              {item}
+                            </Badge>
+                          );
+                        })}
                       </div>
                     </div>
 
                     <div className="bg-secondary/50 rounded-lg p-3">
                       <h4 className="font-medium text-foreground text-sm mb-2">اوایل بازی</h4>
                       <div className="flex flex-wrap gap-2">
-                        {guide.items.early.map((item, idx) => (
-                          <Badge key={idx} variant="outline" className="bg-background/50">
-                            {item}
-                          </Badge>
-                        ))}
+                        {guide.items.early.map((item, idx) => {
+                          const src = getItemImage(item);
+                          return (
+                            <Badge key={idx} variant="outline" className="bg-background/50 flex items-center gap-2">
+                              {src ? (
+                                <img
+                                  src={src}
+                                  alt={item}
+                                  onError={(e) => {
+                                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                                  }}
+                                  className="w-6 h-6 object-contain rounded-sm"
+                                />
+                              ) : null}
+                              {item}
+                            </Badge>
+                          );
+                        })}
                       </div>
                     </div>
 
                     <div className="bg-primary/10 border border-primary/30 rounded-lg p-3">
                       <h4 className="font-medium text-primary text-sm mb-2">آیتم‌های اصلی</h4>
                       <div className="flex flex-wrap gap-2">
-                        {guide.items.core.map((item, idx) => (
-                          <Badge key={idx} className="bg-primary/20 border-primary/30 text-foreground">
-                            {item}
-                          </Badge>
-                        ))}
+                        {guide.items.core.map((item, idx) => {
+                          const src = getItemImage(item);
+                          return (
+                            <Badge key={idx} className="bg-primary/20 border-primary/30 text-foreground flex items-center gap-2">
+                              {src ? (
+                                <img
+                                  src={src}
+                                  alt={item}
+                                  onError={(e) => {
+                                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                                  }}
+                                  className="w-6 h-6 object-contain rounded-sm"
+                                />
+                              ) : null}
+                              {item}
+                            </Badge>
+                          );
+                        })}
                       </div>
                     </div>
 
                     <div className="bg-secondary/50 rounded-lg p-3">
                       <h4 className="font-medium text-foreground text-sm mb-2">آیتم‌های لوکس</h4>
                       <div className="flex flex-wrap gap-2">
-                        {guide.items.luxury.map((item, idx) => (
-                          <Badge key={idx} variant="outline" className="bg-background/50">
-                            {item}
-                          </Badge>
-                        ))}
+                        {guide.items.luxury.map((item, idx) => {
+                          const src = getItemImage(item);
+                          return (
+                            <Badge key={idx} variant="outline" className="bg-background/50 flex items-center gap-2">
+                              {src ? (
+                                <img
+                                  src={src}
+                                  alt={item}
+                                  onError={(e) => {
+                                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                                  }}
+                                  className="w-6 h-6 object-contain rounded-sm"
+                                />
+                              ) : null}
+                              {item}
+                            </Badge>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>

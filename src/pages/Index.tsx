@@ -40,9 +40,6 @@ const Index = () => {
                 <span className="text-gradient">Dota 2</span>{" "}
                 <span className="text-foreground">Heroes</span>
               </h1>
-              <p className="text-muted-foreground text-lg">
-                تمام ۱۲۷ هیروی دوتا ۲ با اطلاعات کامل
-              </p>
             </div>
             <Link to="/team-builder">
               <Button variant="outline" className="gap-2 shrink-0">
@@ -73,7 +70,7 @@ const Index = () => {
             <p className="text-center text-muted-foreground mb-6">
               نمایش {filteredHeroes.length} هیرو
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {filteredHeroes.map((hero) => (
                 <HeroCard
                   key={hero.name}

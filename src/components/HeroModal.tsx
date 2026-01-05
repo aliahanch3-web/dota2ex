@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { useState } from "react";
+import getItemImage from "@/data/items";
 
 interface HeroModalProps {
   hero: Hero | null;
@@ -76,13 +77,27 @@ export const HeroModal = ({ hero, isOpen, onClose }: HeroModalProps) => {
           {/* Key Items */}
           <div className="bg-secondary/50 rounded-lg p-3">
             <p className="text-xs text-muted-foreground mb-2">آیتم‌های کلیدی</p>
-            <div className="flex flex-wrap gap-2">
-              {hero.keyItems.map((item, index) => (
-                <Badge key={index} variant="outline" className="bg-primary/10 border-primary/30 text-foreground">
-                  {item}
-                </Badge>
-              ))}
-            </div>
+              <div className="flex flex-wrap gap-2">
+                {hero.keyItems.map((item, index) => {
+                  const src = getItemImage(item);
+                  return (
+                    <Badge key={index} variant="outline" className="bg-primary/10 border-primary/30 text-foreground flex items-center gap-2">
+                      {src ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={src}
+                          alt={item}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).style.display = "none";
+                          }}
+                          className="w-4 h-4 object-contain rounded-sm"
+                        />
+                      ) : null}
+                      <span className="text-xs">{item}</span>
+                    </Badge>
+                  );
+                })}
+              </div>
           </div>
 
           {/* Synergy & Counters */}

@@ -1,5 +1,6 @@
 import { Hero } from "@/data/heroes";
 import { useState } from "react";
+import getItemImage from "@/data/items";
 
 interface HeroCardProps {
   hero: Hero;
@@ -71,9 +72,31 @@ export const HeroCard = ({ hero, onClick }: HeroCardProps) => {
         <p className="text-xs text-muted-foreground mb-2">
           <span className="text-accent">نکته:</span> {hero.quickTip}
         </p>
-        <p className="text-xs text-muted-foreground">
-          <span className="text-accent">آیتم‌ها:</span> {hero.keyItems.join(", ")}
-        </p>
+        <div className="text-xs text-muted-foreground">
+          <span className="text-accent">آیتم‌ها:</span>
+          <div className="inline-flex items-center gap-2 mr-2">
+            {hero.keyItems.map((item, i) => {
+              const src = getItemImage(item);
+              return (
+                <div key={i} className="inline-flex items-center gap-2">
+                  {src ? (
+                    <img
+                      src={src}
+                      alt={item}
+                      onError={(e) => {
+                        // hide broken images, fallback to initial
+                        (e.currentTarget as HTMLImageElement).style.display = "none";
+                      }}
+                      className="w-4 h-4 object-contain rounded-sm"
+                      loading="lazy"
+                    />
+                  ) : null}
+                  <span className="text-xs">{item}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
