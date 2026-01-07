@@ -207,7 +207,14 @@ async function suggestCounters(
 
   if (cachedData) {
     console.log(`Returning cached counter suggestions for: ${cacheKey}`);
-    return new Response(JSON.stringify({ counters: cachedData.suggestions_data }), {
+    const cached = cachedData.suggestions_data as any;
+    // Handle both old format (array) and new format (object with counters and teamSuggestions)
+    if (Array.isArray(cached)) {
+      return new Response(JSON.stringify({ counters: cached, teamSuggestions: [] }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    return new Response(JSON.stringify({ counters: cached.counters || [], teamSuggestions: cached.teamSuggestions || [] }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
@@ -223,20 +230,34 @@ RESPOND ONLY WITH A VALID JSON OBJECT:
   "counters": [
     {"hero": "Hero Name", "reason": "کوتاه و فارسی چرا کانتر است", "countersAgainst": ["enemy hero 1", "enemy hero 2"]},
     {"hero": "Hero Name", "reason": "کوتاه و فارسی چرا کانتر است", "countersAgainst": ["enemy hero"]}
+  ],
+  "teamSuggestions": [
+    {
+      "name": "نام ترکیب (مثل: Push Strategy)",
+      "description": "توضیح کوتاه فارسی درباره این ترکیب",
+      "pos1": "Hero Name",
+      "pos2": "Hero Name", 
+      "pos3": "Hero Name",
+      "pos4": "Hero Name",
+      "pos5": "Hero Name"
+    }
   ]
 }
 
 Rules:
-- Suggest 5-8 heroes that counter the enemy picks
+- Suggest 5-8 individual heroes that counter the enemy picks
+- Suggest 2-3 complete 5-hero team compositions that counter the enemy picks
 - Reasons must be in Persian (Farsi), max 15 words each
 - Use exact hero names from Dota 2
 - countersAgainst should list which enemy heroes this pick counters
+- For teamSuggestions, each team must have exactly 5 heroes for pos1-pos5
+- Team descriptions should explain why this composition counters the enemy (in Persian)
 - Consider hero abilities, items, and playstyles`;
 
   const userPrompt = `تیم دشمن: ${enemyList}
 هیروهای موجود: ${heroesData.map((h: any) => h.name).join(", ")}
 
-چه هیروهایی کانتر این پیک دشمن هستن؟`;
+چه هیروهایی و چه ترکیب تیم‌هایی کانتر این پیک دشمن هستن؟`;
 
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -261,23 +282,27 @@ Rules:
   const content = data.choices?.[0]?.message?.content || "{}";
 
   let counters: { hero: string; reason: string; countersAgainst: string[] }[] = [];
+  let teamSuggestions: { name: string; description: string; pos1: string; pos2: string; pos3: string; pos4: string; pos5: string }[] = [];
   try {
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
       counters = parsed.counters || [];
+      teamSuggestions = parsed.teamSuggestions || [];
     }
   } catch (parseError) {
     console.error("Failed to parse AI counter response:", parseError);
   }
 
+  const cacheData = { counters, teamSuggestions };
+
   // Save to cache
-  if (counters.length > 0) {
+  if (counters.length > 0 || teamSuggestions.length > 0) {
     const { error: insertError } = await supabase
       .from('counter_suggestions_cache')
       .insert({
         enemy_heroes_key: cacheKey,
-        suggestions_data: counters
+        suggestions_data: cacheData
       });
 
     if (insertError) {
@@ -287,7 +312,7 @@ Rules:
     }
   }
 
-  return new Response(JSON.stringify({ counters }), {
+  return new Response(JSON.stringify({ counters, teamSuggestions }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }

@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Hero, heroes } from "@/data/heroes";
 import { PositionKey, positions } from "@/data/teamCompositions";
 import { toast } from "@/hooks/use-toast";
-import { CounterSuggestion } from "@/components/CounterPickSection";
+import { CounterSuggestion, TeamSuggestion } from "@/components/CounterPickSection";
 
 export interface AISuggestion {
   hero: string;
@@ -32,6 +32,7 @@ export const useAISuggestions = () => {
   const [teamAnalysis, setTeamAnalysis] = useState<TeamAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [counterSuggestions, setCounterSuggestions] = useState<CounterSuggestion[]>([]);
+  const [teamSuggestions, setTeamSuggestions] = useState<TeamSuggestion[]>([]);
   const [isLoadingCounters, setIsLoadingCounters] = useState(false);
 
   const getAISuggestions = useCallback(
@@ -142,11 +143,13 @@ export const useAISuggestions = () => {
   const getCounterSuggestions = useCallback(async (enemyHeroes: string[]) => {
     if (enemyHeroes.length === 0) {
       setCounterSuggestions([]);
+      setTeamSuggestions([]);
       return;
     }
 
     setIsLoadingCounters(true);
     setCounterSuggestions([]);
+    setTeamSuggestions([]);
 
     try {
       const { data, error } = await supabase.functions.invoke("suggest-heroes", {
@@ -174,6 +177,10 @@ export const useAISuggestions = () => {
         );
         setCounterSuggestions(validCounters);
       }
+
+      if (data?.teamSuggestions && Array.isArray(data.teamSuggestions)) {
+        setTeamSuggestions(data.teamSuggestions);
+      }
     } catch (error) {
       console.error("Counter suggestion error:", error);
       toast({
@@ -196,6 +203,7 @@ export const useAISuggestions = () => {
 
   const clearCounterSuggestions = useCallback(() => {
     setCounterSuggestions([]);
+    setTeamSuggestions([]);
   }, []);
 
   return {
@@ -208,6 +216,7 @@ export const useAISuggestions = () => {
     analyzeTeam,
     clearTeamAnalysis,
     counterSuggestions,
+    teamSuggestions,
     isLoadingCounters,
     getCounterSuggestions,
     clearCounterSuggestions,
