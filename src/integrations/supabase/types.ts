@@ -59,6 +59,27 @@ export type Database = {
         }
         Relationships: []
       }
+      team_analysis_cache: {
+        Row: {
+          analysis_data: Json
+          created_at: string
+          id: string
+          team_heroes_key: string
+        }
+        Insert: {
+          analysis_data: Json
+          created_at?: string
+          id?: string
+          team_heroes_key: string
+        }
+        Update: {
+          analysis_data?: Json
+          created_at?: string
+          id?: string
+          team_heroes_key?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
