@@ -26,7 +26,7 @@ serve(async (req) => {
 
     // Type can be "suggest", "analyze", or "counter"
     if (type === "analyze") {
-      return await analyzeTeam(selectedHeroes, LOVABLE_API_KEY);
+      return await analyzeTeam(selectedHeroes, LOVABLE_API_KEY, supabase);
     }
 
     if (type === "counter") {
@@ -115,11 +115,38 @@ Rules:
   });
 }
 
-async function analyzeTeam(selectedHeroes: Record<string, any>, apiKey: string) {
+async function analyzeTeam(selectedHeroes: Record<string, any>, apiKey: string, supabase: any) {
   const heroList = Object.entries(selectedHeroes)
     .filter(([_, hero]) => hero !== null)
     .map(([pos, hero]: [string, any]) => `${pos}: ${hero.name}`)
     .join(", ");
+
+  // Create a unique cache key from sorted heroes with positions
+  const heroEntries = Object.entries(selectedHeroes)
+    .filter(([_, hero]) => hero !== null)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([pos, hero]: [string, any]) => `${pos}:${hero.name.toLowerCase()}`);
+  const cacheKey = heroEntries.join(",");
+
+  // Check cache first
+  const { data: cachedData, error: cacheError } = await supabase
+    .from('team_analysis_cache')
+    .select('analysis_data')
+    .eq('team_heroes_key', cacheKey)
+    .maybeSingle();
+
+  if (cacheError) {
+    console.error("Cache lookup error:", cacheError);
+  }
+
+  if (cachedData) {
+    console.log(`Returning cached team analysis for: ${cacheKey}`);
+    return new Response(JSON.stringify({ analysis: cachedData.analysis_data }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  console.log(`No cache found, generating analysis for: ${cacheKey}`);
 
 const systemPrompt = `You are a Dota 2 analyst. Analyze the team composition.
 
@@ -178,6 +205,22 @@ All text must be in Persian (Farsi).`;
     }
   } catch (parseError) {
     console.error("Failed to parse AI analysis:", parseError);
+  }
+
+  // Save to cache
+  if (analysis) {
+    const { error: insertError } = await supabase
+      .from('team_analysis_cache')
+      .insert({
+        team_heroes_key: cacheKey,
+        analysis_data: analysis
+      });
+
+    if (insertError) {
+      console.error("Failed to cache team analysis:", insertError);
+    } else {
+      console.log(`Team analysis cached for: ${cacheKey}`);
+    }
   }
 
   return new Response(JSON.stringify({ analysis }), {
