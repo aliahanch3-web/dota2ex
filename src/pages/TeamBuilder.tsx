@@ -7,7 +7,7 @@ import HeroSlot from "@/components/HeroSlot";
 import HeroPickerModal from "@/components/HeroPickerModal";
 import EnemyPickerModal from "@/components/EnemyPickerModal";
 import TeamAnalysisCard from "@/components/TeamAnalysisCard";
-import CounterPickSection from "@/components/CounterPickSection";
+import CounterPickSection, { TeamSuggestion } from "@/components/CounterPickSection";
 import { Button } from "@/components/ui/button";
 import { useAISuggestions } from "@/hooks/useAISuggestions";
 import { HeroGuideModal } from "@/components/HeroGuideModal";
@@ -36,6 +36,7 @@ const TeamBuilder = () => {
     analyzeTeam,
     clearTeamAnalysis,
     counterSuggestions,
+    teamSuggestions,
     isLoadingCounters,
     getCounterSuggestions,
     clearCounterSuggestions
@@ -166,6 +167,17 @@ const TeamBuilder = () => {
     }
   };
 
+  const handleSelectTeam = (team: TeamSuggestion) => {
+    const newSelection: Record<PositionKey, Hero | null> = {
+      pos1: heroes.find(h => h.name.toLowerCase() === team.pos1.toLowerCase()) || null,
+      pos2: heroes.find(h => h.name.toLowerCase() === team.pos2.toLowerCase()) || null,
+      pos3: heroes.find(h => h.name.toLowerCase() === team.pos3.toLowerCase()) || null,
+      pos4: heroes.find(h => h.name.toLowerCase() === team.pos4.toLowerCase()) || null,
+      pos5: heroes.find(h => h.name.toLowerCase() === team.pos5.toLowerCase()) || null,
+    };
+    setSelectedHeroes(newSelection);
+  };
+
   const getSlotSuggested = (posKey: PositionKey): boolean => {
     if (selectedHeroes[posKey]) return false;
     const suggestions = getSuggestedHeroes(selectedHeroNames, posKey);
@@ -248,8 +260,10 @@ const TeamBuilder = () => {
             onAddEnemy={() => setIsEnemyPickerOpen(true)}
             onRemoveEnemy={handleRemoveEnemy}
             counterSuggestions={counterSuggestions}
+            teamSuggestions={teamSuggestions}
             isLoading={isLoadingCounters}
             onSelectCounter={handleSelectCounter}
+            onSelectTeam={handleSelectTeam}
           />
         </div>
 
