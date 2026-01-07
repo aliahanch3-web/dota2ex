@@ -25,6 +25,7 @@ const TeamBuilder = () => {
   const [enemyHeroes, setEnemyHeroes] = useState<string[]>([]);
   const [isEnemyPickerOpen, setIsEnemyPickerOpen] = useState(false);
   const [selectedHeroForGuide, setSelectedHeroForGuide] = useState<Hero | null>(null);
+  const [manualAnalyze, setManualAnalyze] = useState(false);
 
   const { 
     aiSuggestions, 
@@ -51,15 +52,18 @@ const TeamBuilder = () => {
     }
   }, [activeSlot, selectedHeroes, getAISuggestions, clearAISuggestions]);
 
-  // Analyze team when all heroes are selected
+  // Analyze team when manually triggered or when all heroes are selected
   useEffect(() => {
+    const selectedCount = Object.values(selectedHeroes).filter(h => h !== null).length;
     const allSelected = Object.values(selectedHeroes).every(h => h !== null);
-    if (allSelected) {
+    
+    if (allSelected || (manualAnalyze && selectedCount >= 2)) {
       analyzeTeam(selectedHeroes);
-    } else {
+      setManualAnalyze(false);
+    } else if (!allSelected && !manualAnalyze) {
       clearTeamAnalysis();
     }
-  }, [selectedHeroes, analyzeTeam, clearTeamAnalysis]);
+  }, [selectedHeroes, manualAnalyze, analyzeTeam, clearTeamAnalysis]);
 
   // Get counter suggestions when enemy heroes change
   useEffect(() => {
@@ -267,8 +271,36 @@ const TeamBuilder = () => {
           />
         </div>
 
+        {/* Analysis Button for Partial Teams */}
+        {!allHeroesSelected && !teamAnalysis && (
+          <div className="mb-8 flex justify-center">
+            <button
+              onClick={() => {
+                const selectedCount = Object.values(selectedHeroes).filter(h => h !== null).length;
+                if (selectedCount >= 2) {
+                  setManualAnalyze(true);
+                }
+              }}
+              disabled={Object.values(selectedHeroes).filter(h => h !== null).length < 2 || isAnalyzing}
+              className="flex items-center gap-2 px-6 py-3 bg-primary/20 border border-primary/30 rounded-lg hover:bg-primary/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isAnalyzing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  درحال تحلیل...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  تحلیل با {Object.values(selectedHeroes).filter(h => h !== null).length} هیرو
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
         {/* AI Team Analysis */}
-        {(allHeroesSelected || isAnalyzing) && !matchedComposition && (
+        {(allHeroesSelected || teamAnalysis) && !matchedComposition && (
           <div className="mb-8">
             <TeamAnalysisCard 
               analysis={teamAnalysis} 

@@ -91,8 +91,8 @@ export const useAISuggestions = () => {
 
   const analyzeTeam = useCallback(
     async (selectedHeroes: Record<PositionKey, Hero | null>) => {
-      const allSelected = Object.values(selectedHeroes).every((h) => h !== null);
-      if (!allSelected) return;
+      const selectedCount = Object.values(selectedHeroes).filter((h) => h !== null).length;
+      if (selectedCount < 2) return;
 
       setIsAnalyzing(true);
       setTeamAnalysis(null);
